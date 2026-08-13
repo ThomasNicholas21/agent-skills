@@ -4,7 +4,7 @@ description: >
   Roteador inteligente e portal de entrada para o Obsidian Second Brain. Use sempre que o usuário solicitar
   pesquisa, contexto de sessão, memória persistente, histórico de decisões, mapeamento de projetos, raciocínio socrático,
   ingestão de mídias/documentos ou manutenção do cofre. Classifica o prompt do usuário e o direciona para a skill
-  oficial ideal entre todos os 46 comandos disponíveis.
+  oficial ideal entre todos os 50 comandos disponíveis.
 ---
 
 # Second Brain Gateway & Prompt Router
@@ -77,9 +77,11 @@ Analise o pedido do usuário e mapeie diretamente para o comando correspondente:
 | "Responda sobre X usando APENAS as notas do meu cofre sem web" | `/notebooklm <tópico>` |
 | "O que está em alta no X sobre o tópico Y?", "Ideias de conteúdo sobre Y" | `/x-pulse <tópico>` |
 
-### F) Ferramentas de Raciocínio Socrático e Tomada de Decisão
+### F) Ferramentas de Raciocínio Socrático, Ensino e Consultoria de Soluções
 | Intenção do Usuário no Prompt | Comando a Executar |
 | :--- | :--- |
+| "Atue como meu professor", "Me ensine didaticamente sobre X", "Debater conceito socrático Y" | `ai-tutor [tópico]` |
+| "Apresentar soluções para o problema X", "Analisar vantagens e desvantagens de arquitetura Y" | `solution-architect [problema]` |
 | "Quero debater uma ideia", "Me faça perguntas para estruturar X" | `/obsidian-brainstorm [tópico]` |
 | "Critique minha ideia", "Procure no meu histórico por que isso pode dar errado" | `/obsidian-challenge` |
 | "Convocar painel de especialistas para avaliar esta decisão" | `/obsidian-panel` |
@@ -93,6 +95,7 @@ Analise o pedido do usuário e mapeie diretamente para o comando correspondente:
 | "Mapear código-fonte", "Documentar arquitetura deste repositório" | `/obsidian-architect` |
 | "Criar/gerenciar nota mestre do projeto X" | `/obsidian-project [nome]` |
 | "Sincronizar código, git e diff do repositório no Second Brain" | `/save-project-brain` |
+| "Sincronizar e expurgar skills órfãs nos agentes" | `./scripts/sync-global-skills.sh --prune` |
 
 ### H) Manutenção, Tarefas e Saúde do Cofre
 | Intenção do Usuário no Prompt | Comando a Executar |
