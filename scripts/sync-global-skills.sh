@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Script for bi-directional synchronization of global skills and rule files (GEMINI.md / CLAUDE.md)
-# Usage: ./scripts/sync-global-skills.sh [specific-skill-name]
+# Script for synchronization of global skills and rule files (GEMINI.md / CLAUDE.md)
+# Usage: ./scripts/sync-global-skills.sh [--prune|-p] [--no-pull] [specific-skill-name]
 
 set -e
 
@@ -17,7 +17,33 @@ GEMINI_SKILLS_TARGET="${GEMINI_DIR}/config/skills"
 CLAUDE_SKILLS_TARGET="${CLAUDE_DIR}/skills"
 GLOBAL_SKILLS_SRC="${HUB_DIR}/global/skills"
 
-SPECIFIC_SKILL="$1"
+DO_PRUNE=0
+DO_PULL=1
+SPECIFIC_SKILL=""
+
+# Parse command line flags and parameters
+for arg in "$@"; do
+  case "$arg" in
+    --prune|-p|--clean|--sync-only)
+      DO_PRUNE=1
+      DO_PULL=0
+      ;;
+    --no-pull)
+      DO_PULL=0
+      ;;
+    -h|--help)
+      echo "Usage: $0 [--prune|-p] [--no-pull] [specific-skill-name]"
+      echo "  --prune, -p : Removes orphan skills in agent targets that do not exist in repo."
+      echo "  --no-pull   : Disables pulling untracked skills from Gemini to repo."
+      exit 0
+      ;;
+    *)
+      if [[ "$arg" != -* ]]; then
+        SPECIFIC_SKILL="$arg"
+      fi
+      ;;
+  esac
+done
 
 if [ ! -d "$GLOBAL_SKILLS_SRC" ]; then
   echo "Error: Global skills source directory '$GLOBAL_SKILLS_SRC' not found."
@@ -25,11 +51,18 @@ if [ ! -d "$GLOBAL_SKILLS_SRC" ]; then
 fi
 
 echo "=========================================================="
-echo "🌐 Bi-directional Global Skills & Rules Synchronization:"
+if [ "$DO_PRUNE" -eq 1 ]; then
+  echo "🌐 Strict Global Skills & Rules Sync (Push & Prune Orphans):"
+else
+  echo "🌐 Bi-directional Global Skills & Rules Synchronization:"
+fi
 echo "   Source Repo:   $GLOBAL_SKILLS_SRC"
 echo "   Gemini Target: $GEMINI_SKILLS_TARGET"
 if [ -d "$CLAUDE_DIR" ]; then
   echo "   Claude Target: $CLAUDE_SKILLS_TARGET"
+fi
+if [ -n "$SPECIFIC_SKILL" ]; then
+  echo "   Filter Skill:  $SPECIFIC_SKILL"
 fi
 echo "=========================================================="
 
@@ -103,49 +136,102 @@ else
   echo "  ✅ Pushed $SYNCED_COUNT skills (unpacked) to agent targets."
 fi
 
-# --- STEP 2: PULL SKILLS (Gemini -> Repo for new/untracked skills) ---
-echo ""
-echo "📥 Step 2: Checking for new skills in Gemini ($GEMINI_SKILLS_TARGET)..."
-PULLED_COUNT=0
+# --- STEP 1.5: PRUNE ORPHANS (Delete skills in target that no longer exist in repo) ---
+if [ "$DO_PRUNE" -eq 1 ]; then
+  echo ""
+  echo "✂️  Step 1.5: Pruning orphan skills from agent targets..."
+  
+  prune_target_skills() {
+    local target_dir="$1"
+    local target_label="$2"
+    [ -d "$target_dir" ] || return 0
+    local pruned_count=0
 
-if [ -d "$GEMINI_SKILLS_TARGET" ]; then
-  for target_skill_dir in "$GEMINI_SKILLS_TARGET"/*; do
-    [ -d "$target_skill_dir" ] || continue
-    # Only pull if it is a valid skill directory containing SKILL.md directly
-    [ -f "$target_skill_dir/SKILL.md" ] || continue
+    for item in "$target_dir"/*; do
+      [ -d "$item" ] || continue
+      local skill_name
+      skill_name="$(basename "$item")"
 
-    skill_name="$(basename "$target_skill_dir")"
-
-    # Skip if specific skill filter is set and doesn't match
-    if [ -n "$SPECIFIC_SKILL" ] && [ "$skill_name" != "$SPECIFIC_SKILL" ]; then
-      continue
-    fi
-
-    # Check if skill exists anywhere in repo (by directory name with SKILL.md)
-    FOUND_IN_REPO=0
-    while read -r repo_skill_dir; do
-      if [ "$(basename "$repo_skill_dir")" = "$skill_name" ]; then
-        FOUND_IN_REPO=1
-        break
+      # Skip if specific skill filter is set and doesn't match
+      if [ -n "$SPECIFIC_SKILL" ] && [ "$skill_name" != "$SPECIFIC_SKILL" ]; then
+        continue
       fi
-    done < <(find_repo_skills)
 
-    if [ "$FOUND_IN_REPO" -eq 0 ]; then
-      # Pull new skill directly to root of global/skills/
-      DEST_DIR="$GLOBAL_SKILLS_SRC/$skill_name"
-      echo "  📥 New skill detected in Gemini! Pulling '$skill_name' -> global/skills/$skill_name"
-      mkdir -p "$DEST_DIR"
-      cp -r "$target_skill_dir/"* "$DEST_DIR/"
-      PULLED_COUNT=$((PULLED_COUNT + 1))
+      # Check if skill exists anywhere in repo (by directory name with SKILL.md)
+      local found_in_repo=0
+      while read -r repo_skill_dir; do
+        if [ "$(basename "$repo_skill_dir")" = "$skill_name" ]; then
+          found_in_repo=1
+          break
+        fi
+      done < <(find_repo_skills)
+
+      if [ "$found_in_repo" -eq 0 ]; then
+        echo "  🗑️ Pruning orphan skill '$skill_name' from $target_label"
+        rm -rf "$item"
+        pruned_count=$((pruned_count + 1))
+      fi
+    done
+    if [ "$pruned_count" -gt 0 ]; then
+      echo "  ✅ Pruned $pruned_count orphan skill(s) from $target_label."
+    else
+      echo "  ✅ No orphan skills found in $target_label."
     fi
-  done
+  }
+
+  prune_target_skills "$GEMINI_SKILLS_TARGET" "Gemini"
+  if [ -d "$CLAUDE_DIR" ]; then
+    prune_target_skills "$CLAUDE_SKILLS_TARGET" "Claude"
+  fi
 fi
 
-if [ "$PULLED_COUNT" -gt 0 ]; then
-  echo "⚠️  NOTIFICATION: $PULLED_COUNT new skill(s) were pulled from .gemini to 'global/skills/' root."
-  echo "    Please review and organize them into appropriate modules if needed."
+# --- STEP 2: PULL SKILLS (Gemini -> Repo for new/untracked skills) ---
+echo ""
+if [ "$DO_PULL" -eq 1 ]; then
+  echo "📥 Step 2: Checking for new skills in Gemini ($GEMINI_SKILLS_TARGET)..."
+  PULLED_COUNT=0
+
+  if [ -d "$GEMINI_SKILLS_TARGET" ]; then
+    for target_skill_dir in "$GEMINI_SKILLS_TARGET"/*; do
+      [ -d "$target_skill_dir" ] || continue
+      # Only pull if it is a valid skill directory containing SKILL.md directly
+      [ -f "$target_skill_dir/SKILL.md" ] || continue
+
+      skill_name="$(basename "$target_skill_dir")"
+
+      # Skip if specific skill filter is set and doesn't match
+      if [ -n "$SPECIFIC_SKILL" ] && [ "$skill_name" != "$SPECIFIC_SKILL" ]; then
+        continue
+      fi
+
+      # Check if skill exists anywhere in repo (by directory name with SKILL.md)
+      FOUND_IN_REPO=0
+      while read -r repo_skill_dir; do
+        if [ "$(basename "$repo_skill_dir")" = "$skill_name" ]; then
+          FOUND_IN_REPO=1
+          break
+        fi
+      done < <(find_repo_skills)
+
+      if [ "$FOUND_IN_REPO" -eq 0 ]; then
+        # Pull new skill directly to root of global/skills/
+        DEST_DIR="$GLOBAL_SKILLS_SRC/$skill_name"
+        echo "  📥 New skill detected in Gemini! Pulling '$skill_name' -> global/skills/$skill_name"
+        mkdir -p "$DEST_DIR"
+        cp -r "$target_skill_dir/"* "$DEST_DIR/"
+        PULLED_COUNT=$((PULLED_COUNT + 1))
+      fi
+    done
+  fi
+
+  if [ "$PULLED_COUNT" -gt 0 ]; then
+    echo "⚠️  NOTIFICATION: $PULLED_COUNT new skill(s) were pulled from .gemini to 'global/skills/' root."
+    echo "    Please review and organize them into appropriate modules if needed."
+  else
+    echo "  ✅ No new untracked skills found in Gemini targets."
+  fi
 else
-  echo "  ✅ No new untracked skills found in Gemini targets."
+  echo "⏭️  Step 2: Skipped Pull from Gemini (One-way Push/Prune mode active)."
 fi
 
 # --- STEP 3: SYNC GLOBAL RULE FILES (GEMINI.md / CLAUDE.md) ---
@@ -183,5 +269,5 @@ fi
 find "$GLOBAL_SKILLS_SRC" -type f -name "*.sh" -exec chmod +x {} \; 2>/dev/null || true
 
 echo "=========================================================="
-echo "🎉 Bi-directional Synchronization Complete!"
+echo "🎉 Synchronization Complete!"
 echo "=========================================================="
