@@ -48,11 +48,14 @@ Ao importar o template para um novo projeto, execute o comando de onboarding:
 Para atualizar a base global de skills a partir do repositório `agent-skills`:
 
 ```bash
-# Sincronizar TODAS as skills globais:
+# Sincronizar TODAS as skills globais (bidirecional):
 ./scripts/sync-global-skills.sh
 
-# Sincronizar uma skill específica:
-./scripts/sync-global-skills.sh generate-mock-data
+# Sincronizar com expurgo de skills órfãs nos agentes (somente push repo -> agentes):
+./scripts/sync-global-skills.sh --prune
+
+# Sincronizar uma skill específica com expurgo:
+./scripts/sync-global-skills.sh --prune generate-mock-data
 ```
 
 ---
@@ -104,8 +107,8 @@ As regras são ativadas automaticamente pelo agente via casamento de padrões de
 - **`drf-spectacular`**: Documentação OpenAPI 3.0, Swagger UI e `@extend_schema`.
 - **`refactor` & `test`**: Runbooks para refatoração segura e execução de suítes de teste.
 
-### 🧠 Memória Persistente (`obsidian-skills/`)
-- Ecossistema de 48 skills integradas ao **Obsidian Second Brain** (OKM - Open Knowledge Metabolism) cobrindo captura, destilação, reconciliação, diagramação, logs diários e persistência bi-temporal de decisões de arquitetura (`save-project-brain`, `obsidian-project`, `obsidian-save`, etc.).
+### 🧠 Memória Persistente & Ensino (`obsidian-skills/`)
+- Ecossistema de 50 skills integradas ao **Obsidian Second Brain** (OKM - Open Knowledge Metabolism) cobrindo captura, ensino didático socrático (`ai-tutor`), consultoria de soluções com prós e contras (`solution-architect`), destilação, reconciliação, diagramação, logs diários e persistência bi-temporal de decisões de arquitetura (`save-project-brain`, `obsidian-project`, `obsidian-save`, etc.).
 
 ---
 
