@@ -15,7 +15,7 @@ Este repositório resolve os dois maiores problemas no desenvolvimento com agent
 
 ## ⚙️ Variáveis de Ambiente
 
-As portas de integração e caminhos do ecossistema são parametrizados via variáveis de ambiente. Utilize o arquivo [`agent-env.sh`](agent-env.sh) ou copie o [`.env.example`](.env.example):
+As portas de integração e caminhos do ecossistema são parametrizados via variáveis de ambiente. Utilize o arquivo [`scripts/agent-env.sh`](scripts/agent-env.sh) ou copie o [`.env.example`](.env.example):
 
 ```bash
 export GEMINI_DIR="$HOME/.gemini"
@@ -72,6 +72,7 @@ As regras são ativadas automaticamente pelo agente via casamento de padrões de
 | **`drf-exceptions.md`** | `**/exceptions.py` | Hierarquia de `DomainException` da Service Layer mapeada por handler global no DRF. |
 | **`django-validators.md`**| `**/validators.py` | Validadores de domínio reutilizáveis entre Service Layer, Models (`clean()`) e Serializers. |
 | **`drf-urls.md`** | `**/urls.py` | Roteamento hierárquico em 3 níveis e Nested URLs via `drf-nested-routers`. |
+| **`drf-architecture.md`** | `**/*.py` | Diretrizes de arquitetura DRF, desacoplamento de camadas e padrão Service Layer/ViewSet. |
 | **`django-and-drf-performance.md`** | `**/*.py` | Guia mestre com 70 pontos de performance: `Subquery`, `OuterRef`, `select_related`, `prefetch_related`, N+1 e Redis. |
 | **`testing-standards.md`** | `**/test*.py` | Testes determinísticos, mixins de criação herdados, `SimpleTestCase` (sem banco), `TestCase` e `APITestCase`. |
 | **`antigravity-rtk-rules.md`** | `*` | Uso mandatório do prefixo `rtk` para compressão de saída de terminal em 60–90%. |
@@ -139,7 +140,6 @@ As regras são ativadas automaticamente pelo agente via casamento de padrões de
 
 ```text
 agent-skills/
-├── agent-env.sh                           # Carregador de variáveis de ambiente
 ├── .env.example                           # Exemplo de configuração de env vars
 ├── docs/                                  # Manuais RTK, Design Patterns e Second Brain
 ├── global/                                # Espelho global (sincronizado com ~/.gemini/ e ~/.claude/)
@@ -147,11 +147,14 @@ agent-skills/
 │   └── skills/                            # Skills globais (patterns, util-skills, obsidian, feature)
 ├── templates/                             # Templates mestres para novos projetos
 │   └── project-.agents/                   # Estrutura base da pasta .agents/ para repositórios
-│       ├── rules/                         # 15 Regras (models, viewsets, serializers, performance, testes)
+│       ├── rules/                         # 15 Regras (models, viewsets, serializers, drf-architecture, performance, testes)
 │       ├── skills/                        # Skills locais (skill-creator, update-agents)
 │       └── workflows/                     # Workflows locais (/update-agents)
 ├── scripts/                               # Scripts executáveis
+│   ├── agent-env.sh                       # Carregador de variáveis de ambiente
 │   ├── init-project-agents.sh             # Inicialização de novos projetos
+│   ├── clone-agent-template.sh            # Clonagem mestre de templates
+│   ├── load-global-env.sh                 # Carregador global de variáveis no profile shell
 │   └── sync-global-skills.sh              # Sincronização de skills globais
 └── README.md                              # Documentação oficial do ecossistema
 ```
