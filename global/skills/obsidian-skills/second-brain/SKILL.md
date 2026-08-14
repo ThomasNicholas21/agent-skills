@@ -15,7 +15,7 @@ O objetivo é interpretar o prompt em linguagem natural e direcionar a execuçã
 
 ---
 
-## ⚠️ Setup & Resolução Mandatória do Vault Root e Diretórios do Ecossistema
+## Setup & Resolução Mandatória do Vault Root e Diretórios do Ecossistema
 
 Sempre que a skill `/second-brain` for invocada, o agente DEVE ler e resolver **imediatamente** as variáveis de ambiente parametrizadas (definidas em `.env.example`), garantindo acesso rápido e sem necessidade de buscas exploratórias adicionais:
 
@@ -31,6 +31,22 @@ Sempre que a skill `/second-brain` for invocada, o agente DEVE ler e resolver **
 | `$CLAUDE_DIR` | `/home/thomas/.claude` | Diretório de configuração global do agente Claude Code. |
 
 **Regra de Ouro (Vault Root)**: O cofre do Obsidian FICA EM UM LOCAL DIFERENTE do repositório de código. Todas as leituras e escritas no Second Brain DEVEM ocorrer estritamente na raiz do cofre resolvida (`$OBSIDIAN_VAULT_PATH` / `$OBSIDIAN_VAULT_DIR` / `$SECOND_BRAIN_DIR`). Leia `_CLAUDE.md` na raiz do Vault antes de criar notas para carregar convenções e schemas do usuário. **NUNCA** misture arquivos do cofre dentro do repositório de código nem grave notas em locais efêmeros.
+
+### Operações permitidas
+
+- Criar ou sobrescrever arquivos: `cat > arquivo <<'EOF' ... EOF`
+- Acrescentar conteúdo: `cat >> arquivo <<'EOF' ... EOF`
+- Substituições simples: `sed`
+- Edições estruturadas ou complexas: ferramenta de edição do agente, quando disponível.
+
+### Operações proibidas
+
+O agente NÃO DEVE utilizar Python (`python`, `python3`, scripts `.py`,
+ou bibliotecas como `pathlib`/`open`) para criar, modificar, sobrescrever
+ou remover arquivos do Obsidian Vault.
+
+Python pode ser utilizado para análise ou processamento de dados quando
+necessário, mas nunca como mecanismo de persistência no Vault.
 
 ---
 
