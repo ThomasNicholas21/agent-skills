@@ -1,3 +1,12 @@
+---
+name: create-refactor-plan-workflow
+description: >-
+  Workflow determinístico para planejamento de refatoração de código (Analyze-Before-Plan).
+  Mapeia o blast radius completo, avalia a suíte de testes existente, conduz debate de riscos e abordagem
+  com o usuário, e gera implementation_plan.md minimalista com testes de regressão sob aprovação explícita.
+  Use sempre que o usuário invocar /create-refactor-plan-workflow ou solicitar refatoração estrutural.
+---
+
 # Workflow: Plano de Refatoração – Analyze Before Plan (create-refactor-plan-workflow)
 
 Este workflow segue o padrão **Analyze-Before-Plan**: o agente investiga o impacto, debate com o usuário e só gera o plano de refatoração sob comando explícito.

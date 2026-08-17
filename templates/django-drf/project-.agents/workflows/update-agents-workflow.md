@@ -1,3 +1,11 @@
+---
+name: update-agents-workflow
+description: >-
+  Workflow interativo de onboarding e calibração de regras (.agents/rules/), skills e configurações do agente.
+  Suporta análise completa do codebase para projetos existentes ou entrevista interativa (estilo grill-me),
+  gerando regras adaptadas via skill-creator. Use sempre que o usuário invocar /update-agents-workflow ou /update-agents.
+---
+
 # Workflow: Update Agents (`/update-agents-workflow` ou `/update-agents`)
 
 Comando de ativação: `/update-agents-workflow` ou `/update-agents`

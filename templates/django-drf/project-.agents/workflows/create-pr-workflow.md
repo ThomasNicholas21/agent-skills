@@ -1,3 +1,11 @@
+---
+name: create-pr-workflow
+description: >-
+  Workflow para geração automatizada de descrição de Pull Request com base no histórico Git,
+  rotas/endpoints mapeados e respostas OpenAPI/Swagger, formatado estritamente conforme o gabarito
+  pull_request_template.md com limite de 1500 caracteres. Use sempre que o usuário invocar /create-pr-workflow ou /create-pr.
+---
+
 # Workflow: Geração de Pull Request (create-pr-workflow)
 
 Este workflow analisa o histórico de alterações no Git, mapeia novos e modificados endpoints, extrai as respostas de erro do Swagger OpenAPI e formata a descrição do PR baseada no gabarito `.github/pull_request_template.md`.

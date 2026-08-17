@@ -1,3 +1,12 @@
+---
+name: create-test-plan-workflow
+description: >-
+  Workflow para elaboração de plano de testes automatizados abrangente em projetos Django/DRF.
+  Mapeia lacunas de cobertura por camada (Models, Serializers, ViewSets, Services), alinha prioridades com
+  o usuário e gera implementation_plan.md com snippets de teste (Model Factory Mixins, SimpleTestCase, TestCase, APITestCase).
+  Use sempre que o usuário invocar /create-test-plan-workflow ou pedir plano de testes.
+---
+
 # Workflow: Plano de Testes Abrangente (create-test-plan-workflow)
 
 Este workflow orienta a análise arquitetural completa de um repositório Django/DRF para elaborar um plano de testes automatizados cobrindo todas as camadas do projeto.

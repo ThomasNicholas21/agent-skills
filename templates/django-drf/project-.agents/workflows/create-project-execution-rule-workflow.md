@@ -1,3 +1,11 @@
+---
+name: create-project-execution-rule-workflow
+description: >-
+  Workflow para inspeção e detecção de comandos de execução do projeto (venv, docker, migrações, servidores,
+  health checks), debate com o usuário e geração da regra .agents/rules/project-execution.md.
+  Use sempre que o usuário invocar /create-project-execution-rule-workflow ou solicitar configuração de execução.
+---
+
 # Workflow: Criação e Customização da Regra de Execução (create-project-execution-rule-workflow)
 
 Este workflow orienta a inspeção de um repositório, o alinhamento de comandos com o usuário e a geração/customização da regra `.agent/rules/project-execution.md` específica do projeto.

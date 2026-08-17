@@ -1,3 +1,12 @@
+---
+name: create-feature-plan-workflow
+description: >-
+  Workflow determinístico para planejamento e implementação de novas funcionalidades (Analyze-Before-Plan).
+  Realiza análise exploratória, debate híbrido com o usuário e executa o ciclo lazy em 3 fases
+  (Models First -> API Layer -> Business Logic) com roadmaps e planos incrementais.
+  Use sempre que o usuário invocar /create-feature-plan-workflow ou solicitar planejamento de novas features.
+---
+
 # Workflow: Plano de Nova Funcionalidade – Analyze Before Plan (create-feature-plan-workflow)
 
 Este workflow segue o padrão **Analyze-Before-Plan**: o agente investiga, debate com o usuário e só gera o plano de implementação sob comando explícito. A feature é dividida em **3 fases lazy** (Models → API → Business), cada uma com seu próprio `implementation_plan.md` gerado, aprovado e executado sequencialmente.

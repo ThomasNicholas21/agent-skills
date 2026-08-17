@@ -1,3 +1,12 @@
+---
+name: create-bugfix-plan-workflow
+description: >-
+  Workflow determinístico para diagnóstico e correção de bugs (Analyze-Before-Plan).
+  Investiga a causa raiz com evidências empíricas (tracebacks, testes, blast radius),
+  conduz debate estruturado e gera implementation_plan.md somente sob aprovação explícita.
+  Use sempre que o usuário invocar /create-bugfix-plan-workflow ou pedir diagnóstico/correção de bugs.
+---
+
 # Workflow: Plano de Correção de Bugs – Analyze Before Plan (create-bugfix-plan-workflow)
 
 Este workflow segue o padrão **Analyze-Before-Plan**: o agente investiga a causa raiz, debate com o usuário e só gera o plano de correção sob comando explícito.
