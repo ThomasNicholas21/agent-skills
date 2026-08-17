@@ -1,114 +1,173 @@
 ---
 name: save-project-brain
 description: >
-  Sincronização exaustiva do repositório atual com o Obsidian Second Brain.
-  Executa varredura profunda linha por linha via RTK (rtk git status, rtk git diff, rtk git log, rtk find, rtk grep, rtk read),
-  classifica alterações no modelo OKM (Open Knowledge Metabolism), registra fatos bi-temporais e atualiza o cofre
-  usando o padrão AI-First (_CLAUDE.md, /obsidian-project, /obsidian-architect com sentinelas, /obsidian-decide, /obsidian-task e /obsidian-health).
+  Sincronizacao exaustiva do repositorio atual com o Obsidian Second Brain no padrao Analyze-Before-Save.
+  Executa varredura profunda de ponta a ponta via RTK (projeto completo, todas as URLs e rotas, estado e diff do Git),
+  elabora um plano de sincronizacao previo e atualiza o cofre utilizando estritamente as skills oficiais do Obsidian
+  (_CLAUDE.md, /obsidian-project, /obsidian-architect com sentinelas, /obsidian-decide, /obsidian-task, /obsidian-reconcile e /obsidian-health).
 metadata:
   category: meta
 ---
 
-# Save Project Brain (Sincronização Total de Projeto via Git e RTK)
+# Save Project Brain (Sincronizacao de Projeto no Padrao Analyze-Before-Save)
 
-Esta habilidade executa o escaneamento exaustivo do repositório ativo, inspecionando o código-fonte linha por linha e o estado do Git através do **RTK (Rust Token Killer)**. Em seguida, sincroniza todas as descobertas com o **Obsidian Second Brain**, garantindo conformidade total com o padrão **OKM (Open Knowledge Metabolism)** e a regra **AI-First Vault Rule**.
-
----
-
-## Directivas Obrigatórias de Execução
-
-### 1. Resolução de Contexto do Cofre e Repositório
-- **Caminho do Cofre**: Resolva o caminho raiz do cofre Obsidian a partir da variável de ambiente `$OBSIDIAN_VAULT_PATH` ou do diretório atual.
-- **Manual do Cofre**: Leia o arquivo `_CLAUDE.md` / `AGENTS.md` / `_GEMINI.md` na raiz do cofre (se existir) antes de realizar escritas para respeitar a estrutura de pastas e regras específicas do usuário.
-- **Caminho do Projeto**: Identifique o repositório Git ativo e o nome mestre do projeto.
-
-### 2. Inspeção Exaustiva de Código e Git via RTK (Mandatório)
-Todas as operações de terminal **devem utilizar o prefixo `rtk`** para compressão eficiente de contexto:
-
-1. **Estado de Versionamento**:
-   - Executar `rtk git status` para listar arquivos modificados, staged, novos (*untracked*) e removidos.
-   - Executar `rtk git diff` para extrair as alterações compactas com assinaturas de funções, tipos e rotas alteradas.
-   - Executar `rtk git log -n 5` para capturar a intenção dos commits recentes.
-
-2. **Exploração e Inspeção Linha por Linha**:
-   - Executar `rtk find` para obter a árvore de diretórios e a estrutura de módulos do projeto.
-   - Para cada arquivo modificado ou em varredura completa de arquitetura, executar `rtk read <file>` para inspecionar o código linha por linha, capturando assinaturas de métodos, modelos de dados, schemas de banco de dados, endpoints de API e dependências.
-   - Usar `rtk grep "<pattern>"` para buscar padrões específicos ou declarações críticas no código-fonte.
+Esta habilidade executa o escaneamento exaustivo de ponta a ponta do repositorio ativo utilizando o **RTK (Rust Token Killer)**. Antes de qualquer persistencia no **Obsidian Second Brain**, o agente analisa a totalidade do projeto, mapeia todas as URLs e rotas de API, examina as alteracoes do Git e elabora um plano de sincronizacao detalhado. A gravacao no cofre e conduzida estritamente atraves das **skills oficiais do Obsidian**, em total conformidade com o padrao **OKM (Open Knowledge Metabolism)** e a regra **AI-First**.
 
 ---
 
-## Fluxo de Sincronização em 5 Etapas
+## Diretivas Obrigatorias de Execucao
 
-### Etapa 1: Resolução de Contexto e Mapeamento
-Identifique o hub do projeto no cofre. A pasta de projetos é resolvida conforme `references/folder-map.md` (padrão `wiki/projects/<nome>/` ou `Projects/<nome>/`). Se a nota mestre do projeto não existir, execute a lógica do `/obsidian-project` para criá-la.
+### 1. Resolucao de Contexto do Cofre e Repositorio
+- **Caminho do Cofre**: Resolva a raiz do cofre atraves de `$OBSIDIAN_VAULT_PATH` ou `$OBSIDIAN_VAULT_DIR` / `$SECOND_BRAIN_DIR`. No ambiente Linux, trate caminhos com espacos utilizando aspas duplas (exemplo: `"$OBSIDIAN_VAULT_PATH"`).
+- **Manual do Cofre**: Leia o arquivo `_CLAUDE.md` / `AGENTS.md` / `_GEMINI.md` na raiz do cofre antes de realizar escritas para carregar a taxonomia, mapa de pastas e convencoes do usuario.
+- **Identificacao do Projeto**: Identifique o repositorio Git ativo, a branch corrente e o nome canonico do projeto.
 
-### Etapa 2: Análise Semântica e Metabolismo OKM
-Categorize as mudanças encontradas na inspeção RTK:
-- **Alterações de Arquitetura**: Mudanças em schemas de banco de dados, arquivos de configuração (`pyproject.toml`, `package.json`), dependências ou camadas de serviço.
-- **Novas Funcionalidades**: Criação de novas rotas de API, módulos, classes ou interfaces.
-- **Refatorações e Correções**: Ajustes de lógica, melhorias de desempenho e correções de testes.
-- **Decisões Técnicas**: Opções de design e refatorações relevantes.
+### 2. Uso Obrigatorio do RTK
+Todas as operacoes de terminal no repositorio de codigo **devem utilizar o prefixo `rtk`** para compressao eficiente de contexto:
+- Consultas de arquivos e modulos: `rtk find`
+- Inspecao de conteudo linha por linha: `rtk read <caminho>`
+- Busca textual e de assinaturas: `rtk grep "<padrao>"`
+- Estado do versionamento: `rtk git status`, `rtk git diff`, `rtk git log -n 5`
 
-**Regra Bi-temporal OKM**: Quando um fato ou estado do projeto mudar (ex: versão de framework, status de módulo), NUNCA sobrescreva o histórico. Adicione ao array `timeline:` no frontmatter:
-```yaml
-timeline:
-  - fact: "Banco de dados SQLite"
-    from: 2024-01-01
-    until: 2026-08-13
-    learned: 2026-08-13
-    source: "[[2026-08-13 - Migração PostgreSQL]]"
-  - fact: "Banco de dados PostgreSQL"
-    from: 2026-08-13
-    until: present
-    learned: 2026-08-13
-    source: "[[2026-08-13 - Migração PostgreSQL]]"
+---
+
+## Fluxo em 4 Fases: Analyze-Before-Save
+
+```text
++-----------------------+     +-----------------------+     +-----------------------+     +-----------------------+
+|  Fase 1: Analise de   | --> |  Fase 2: Analise de   | --> |  Fase 3: Plano de     | --> |  Fase 4: Gravacao via |
+|  Ponta a Ponta (Repo) |     |  Git & Trabalho Feito |     |  Sincronizacao Previo |     |  Skills do Obsidian   |
+|                       |     |                       |     |                       |     |                       |
+|  - Estrutura completa |     |  - rtk git status     |     |  - Mapeamento notas   |     |  - /obsidian-project  |
+|  - Configs/Dep.       |     |  - rtk git diff       |     |  - Mapeamento ADRs    |     |  - /obsidian-architect|
+|  - TODAS as URLs      |     |  - rtk git log        |     |  - Mapeamento Kanban  |     |  - /obsidian-decide   |
+|  - Models e Services  |     |                       |     |  - Timeline OKM       |     |  - /obsidian-task     |
++-----------------------+     +-----------------------+     +-----------------------+     +-----------------------+
 ```
 
-### Etapa 3: Sincronização no Cofre Obsidian (AI-First & Obsidian Core)
+---
 
-1. **Nota Mestre do Projeto (`wiki/projects/<nome>/index.md` ou `Projects/<nome>/index.md`)**:
-   - Atualize a seção de estado atual, metas e atividades recentes com links `[[wikilinks]]`.
+### Fase 1: Analise de Ponta a Ponta do Projeto (RTK Exaustivo)
 
-2. **Documentação Arquitetural (`/obsidian-architect` com Sentinelas)**:
-   - Em `<pasta do projeto>/Architecture/`, crie ou atualize as notas:
-     - `Architecture - Overview.md` (`type: architecture-overview`): Visão geral do repositório, módulos e diagrama Mermaid da arquitetura.
-     - `Architecture - <Modulo>.md` (`type: architecture-module`): Para cada módulo `core` inspecionado via `rtk read`.
-   - **Escrita Protegida por Sentinelas**: Todo conteúdo gerado por máquina DEVE ser delimitado por:
-     ```markdown
-     <!-- @generated:start -->
-     ...conteúdo sintetizado...
-     <!-- @generated:end -->
-     ```
-     Conteúdo fora das sentinelas ou em blocos `<!-- @user:start -->` NUNCA deve ser alterado em atualizações futuras.
+Antes de planejar ou escrever qualquer nota, execute uma varredura completa do repositorio:
 
-3. **Registro de Decisões de Arquitetura (ADRs - `/obsidian-decide`)**:
-   - Registre decisões técnicas relevantes encontradas nos commits/diffs como registros ADR em `Architecture - Key decisions.md` ou notas individuais de decisão.
+1. **Estrutura Geral e Modulos**:
+   - Execute `rtk find` para listar a arvore completa de arquivos e identificar todos os apps, pacotes e camadas da aplicacao.
+   - Execute `rtk read` nos arquivos de configuracao central (`pyproject.toml`, `package.json`, `settings.py`, `docker-compose.yml`, `.env.example`) para mapear stacks, versoes e servicos externos.
 
-4. **Quadro Kanban & Tarefas (`/obsidian-task` / `/obsidian-board`)**:
-   - Mova tarefas marcadas como concluídas no código para a coluna `## ✅ Done` do Kanban do projeto.
-   - Adicione novos itens de TODO/FIXME encontrados via `rtk grep` como tarefas no backlog.
+2. **Mapeamento Exaustivo de TODAS as URLs e Rotas**:
+   - Execute `rtk grep` e `rtk read` para extrair todas as declaracoes de rotas, endpoints e schemas de API do repositorio:
+     - Arquivos de URLs e roteadores: `urls.py`, `nested_urls.py`, `routers.py`, `routes/`, `endpoints/`, `api/`.
+     - Decoradores e schemas OpenAPI/Swagger: `schemas.py`, `@extend_schema`, `@extend_schema_view`, decorators de rota.
+     - Identifique e tabule para cada endpoint:
+       - Metodo HTTP (GET, POST, PUT, PATCH, DELETE).
+       - Path / URL relativa (ex: `/api/v1/users/`, `/api/v1/orders/{id}/pay/`).
+       - View, ViewSet ou Handler responsavel.
+       - Politica de autenticacao e permissoes associadas.
+       - Parametros principais e payload de entrada/saida.
 
-5. **Logs de Operação**:
-   - Registre a operação no log diário (`Logs/YYYY-MM-DD.md` se existir, ou `log.md` na raiz do cofre) com o timestamp da sincronização.
-   - Atualize os dados de estatísticas em `index.md`.
+3. **Modelos de Dados e Persistencia**:
+   - Execute `rtk grep "class " -- "models.py"` e `rtk read` nos arquivos de modelos para mapear entidades, relacionamentos (`ForeignKey`, `ManyToManyField`), restricoes de integridade (`UniqueConstraint`, `CheckConstraint`) e custom managers/querysets.
 
-### Etapa 4: Reconciliação e Auditoria pós-Sincronização
-Após a gravação de todas as notas:
-- Execute a lógica de `/obsidian-reconcile` para identificar e resolver contradições entre a nova documentação e notas antigas.
-- Execute a auditoria do `/obsidian-health` para garantir zero links quebrados, zero notas órfãs e conformidade total com a política de recência OKM.
+4. **Regras de Negocio e Camada de Servico**:
+   - Inspecione `services.py`, handlers de dominio e rotinas de integracao externa para capturar a logica de negocio, fluxos transacionais e invariantes.
 
 ---
 
-## Regra AI-First Incorporada (Obrigatória)
+### Fase 2: Analise do Trabalho Realizado (Git & Delta)
 
-Cada nota criada ou atualizada por esta skill DEVE seguir as diretrizes AI-First:
+Apos entender a totalidade do projeto, analise precisamente o que mudou no ciclo de desenvolvimento recente:
 
-1. **Contexto Autocontido**: A nota deve ser compreensível isoladamente por uma IA futura.
-2. **Preâmbulo `## For future Claude`**: Resumo de 2 a 3 frases no topo da nota explicitando o que ela contém, por que foi salva e ressalvas de recência.
-3. **Frontmatter Rico**:
+1. **Estado de Modificacao**:
+   - Execute `rtk git status` para classificar arquivos modificados, staged, novos (untracked) e deletados.
+
+2. **Diferencas de Codigo**:
+   - Execute `rtk git diff` para capturar as alteracoes exatas, novas assinaturas de metodos, novos campos de models, mudancas em validadores de serializers e novos testes.
+
+3. **Intencao e Historico Recente**:
+   - Execute `rtk git log -n 5` para resgatar as mensagens de commit recentes e compreender a intencao declarada do desenvolvedor.
+
+---
+
+### Fase 3: Elaboracao do Plano de Sincronizacao (Plan Before Save)
+
+Com base nas analises das Fases 1 e 2, estruture e apresente o **Plano de Sincronizacao** detalhando exatamente o que sera gravado no cofre:
+
+```markdown
+### Plano de Sincronizacao com o Second Brain
+
+1. **Hub do Projeto**:
+   - Nota alvo: `wiki/projects/<nome-do-projeto>/index.md` (ou `Projects/<nome>/index.md`)
+   - Acao: Atualizar status atual, resumo do progresso e links para novas notas.
+
+2. **Documentacao Arquitetural e URLs**:
+   - `Architecture - Overview.md`: Atualizar visao geral e mapa de modulos.
+   - `Architecture - Modulos`: Atualizar ou criar notas dos modulos afetados com o catalogo de URLs mapeadas.
+   - Sentinelas: Aplicar blocos de protecao `<!-- @generated:start -->` e `<!-- @generated:end -->`.
+
+3. **Registro de Decisoes (ADRs)**:
+   - Identificar decisoes de design ou arquitetura presentes nos diffs e registrar via `/obsidian-decide`.
+
+4. **Kanban e Tarefas**:
+   - Mover itens concluidos para a secao `[Done]`.
+   - Registrar novos itens de TODO/FIXME detectados como pendencias via `/obsidian-task`.
+
+5. **Rastreamento Bi-temporal OKM**:
+   - Inserir entradas no array `timeline:` do frontmatter para mudancas de estado ou tecnologias.
+```
+
+---
+
+### Fase 4: Execucao da Sincronizacao via Skills Oficiais do Obsidian
+
+Execute a sincronizacao invocando estritamente as skills oficiais do ecossistema Obsidian:
+
+1. **Hub do Projeto (`/obsidian-project [nome]`)**:
+   - Crie ou atualize a nota mestre do projeto registrando descricao, stack consolidada, endpoints principais e links `[[wikilinks]]`.
+
+2. **Documentacao de Arquitetura (`/obsidian-architect`)**:
+   - Em `<pasta-do-projeto>/Architecture/`:
+     - `Architecture - Overview.md` (`type: architecture-overview`): Diagrama Mermaid, topologia de servicos e arvore de modulos.
+     - `Architecture - <Modulo>.md` (`type: architecture-module`): Documentacao de cada modulo, contendo a lista completa de URLs/endpoints correspondentes, regras de negocio e modelos.
+   - **Sentinelas de Protecao**:
+     ```markdown
+     <!-- @generated:start -->
+     ...conteudo sintetizado automaticamente...
+     <!-- @generated:end -->
+     ```
+     Blocos fora das sentinelas ou delimitados por `<!-- @user:start -->` NUNCA sao sobrescritos.
+
+3. **Decisoes de Arquitetura (`/obsidian-decide`)**:
+   - Registre as escolhas tecnicas relevantes identificadas na analise de diffs como registros estruturados de decisao.
+
+4. **Quadro de Tarefas (`/obsidian-task` e `/obsidian-board`)**:
+   - Sincronize o estado das tarefas no Kanban do projeto:
+     - Itens concluidos no codigo vao para `## [Done]`.
+     - Novos itens de debito tecnico ou proximos passos vao para `## [Backlog]` ou `## [Todo]`.
+
+5. **Logs de Operacao (`/obsidian-log`)**:
+   - Registre a sessao de trabalho no log diario do cofre com data, commit escaneado e sumario executivo.
+
+6. **Auditoria e Reconciliacao (`/obsidian-reconcile` e `/obsidian-health`)**:
+   - Execute `/obsidian-reconcile` para identificar e sanar contradicoes entre notas novas e historicas.
+   - Execute `/obsidian-health` para validar que nao ha links quebrados, tags invalidas ou violacoes de esquema AI-First.
+
+---
+
+## Padrao AI-First Mandatorio
+
+Toda nota criada ou modificada DEVE conter:
+
+1. **Preambulo Obrigatorio**:
+   ```markdown
+   ## For future Claude
+   Resumo conciso de 2 a 3 frases explicitando o conteudo da nota, contexto de criacao e marcadores de recencia.
+   ```
+
+2. **Frontmatter Estruturado**:
    ```yaml
    ---
-   type: project-hub # ou architecture-overview, architecture-module, adr, dev-log
+   type: project-hub # architecture-overview, architecture-module, adr, dev-log
    date: YYYY-MM-DD
    tags:
      - project
@@ -117,19 +176,20 @@ Cada nota criada ou atualizada por esta skill DEVE seguir as diretrizes AI-First
    scanned-commit: "hash-do-commit"
    ---
    ```
-4. **Marcadores de Recência por Afirmação**: Toda afirmação técnica externa ou estado deve conter marcador `(as of YYYY-MM-DD, commit: hash)`.
-5. **Links Mandatórios**: Toda pessoa, projeto, tecnologia ou conceito mencionado deve usar `[[wikilinks]]`.
-6. **Anti-Fabricação**: Documente estritamente o que foi verificado via RTK no código-fonte. Raciocínios ou intenções inferidas devem ser marcadas com `confidence: speculation`.
+
+3. **Marcadores de Recencia**: Afirmacoes tecnicas devem conter `(as of YYYY-MM-DD, commit: <hash>)`.
+4. **Links Internos**: Todo conceito, tecnologia, projeto ou modulo deve ser referenciado via `[[wikilinks]]`.
+5. **Anti-Fabricacao**: Documente apenas o que foi comprovado via RTK no codigo-fonte. Hipoteses devem ser marcadas com `confidence: speculation`.
 
 ---
 
-## Como Invocar
+## Invocacao
 
-No chat do Antigravity estando no diretório do seu projeto:
+No terminal ou chat do agente:
 ```text
 /save-project-brain
 ```
-ou solicitando em linguagem natural:
+ou em linguagem natural:
 ```text
-Sincronize exaustivamente as alterações e o código do meu projeto no Second Brain.
+Analise este repositorio de ponta a ponta com RTK, mapeie todas as URLs e o Git, e salve a sincronizacao no Second Brain.
 ```
