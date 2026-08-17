@@ -1,18 +1,18 @@
 ---
 name: project-daily
 description: >
-  Gera e gerencia notas de daily diárias e notas de apoio (IPS, Users, Links, Accounts, TODO) por projeto
-  formatadas para leitura humana no diretório configurado em $DAILIES_DIR. Constrói histórico sequencial,
-  sucinto e direto, sem preâmbulos de IA e sem persistência no Vault. Ensina como ler, escrever e editar no Linux.
+  Gera e gerencia notas de daily sequenciais (1 - Daily - {{date}}) e cadernos de apoio por projeto em $DAILIES_DIR.
+  Inicializa projetos inexistentes automaticamente (Scaffolding com Index.md e Notes/), organiza tags e índices
+  para busca no Obsidian, aplica linguagem simples com detalhamento técnico (motivos/raciocínio) e integra com /second-brain.
 metadata:
   category: workflow
 ---
 
-# Project Daily (Dailies e Notas de Apoio por Projeto em DAILIES_DIR)
+# Project Daily (Dailies Sequenciais, Index e Notas de Apoio por Projeto)
 
-Esta habilidade cria e atualiza notas diárias (**Dailies**) e cadernos de apoio (**Notes**) estruturados por projeto, formatados exclusivamente para **leitura humana direta, sucinta e sequencial**.
+Esta habilidade gerencia o ciclo completo de documentação diária de desenvolvimento por projeto: inicialização automática de novos projetos (scaffolding), geração de **Dailies Sequenciais** (`1 - Daily - YYYY-MM-DD`, `2 - Daily - YYYY-MM-DD`, ...), manutenção do **Índice Mestre (`Index.md`)**, cadernos de apoio (**Notes/**), indexação via tags no Obsidian, redação em **dupla camada (linguagem simples + detalhamento técnico com motivos)** e sincronização com o cofre do **/second-brain**.
 
-Todos os arquivos gerados por esta skill são armazenados no diretório do sistema configurado na variável de ambiente **`$DAILIES_DIR`**, operando de forma independente do cofre do Obsidian.
+Todos os arquivos são armazenados no diretório do sistema configurado em **`$DAILIES_DIR`**, com estrutura otimizada para leitura humana direta e navegação fluida dentro do Obsidian.
 
 ---
 
@@ -25,230 +25,266 @@ Ao invocar `/project-daily`, o agente deve resolver:
    - Se a variável não estiver definida, avisar o usuário para configurá-la em seu `.env` (exemplo: `DAILIES_DIR="$HOME/dailies"` ou `DAILIES_DIR="/mnt/c/Users/thoma/Meus Documentos/Dailies"`).
    - **Regra de Caminho no Linux**: Sempre utilize aspas duplas ao referenciar o caminho para suportar diretórios com espaços (`"$DAILIES_DIR"`).
 
-2. **Identificação do Nome do Projeto**:
+2. **Identificação do Nome e Slug do Projeto**:
    - Se o usuário informar o argumento (exemplo: `/project-daily MeuProjeto`), utilize o nome fornecido.
    - Se não informado, infira o nome canônico a partir do diretório do repositório Git ativo ou do contexto da conversa.
+   - Gere a versão slug para tags (exemplo: `MeuProjeto` -> `meu-projeto`).
 
 ---
 
-## 2. Estrutura de Pastas e Arquivos Gerada
+## 2. Estrutura Completa de Pastas e Arquivos do Projeto
 
-A skill garante a existência da seguinte estrutura dentro de `$DAILIES_DIR`:
+A skill garante a existência da seguinte estrutura padronizada dentro de `$DAILIES_DIR`:
 
 ```text
 $DAILIES_DIR/<Nome do Projeto>/
++-- Index.md                    # Hub mestre de navegação, resumo do projeto e índice de dailies
 +-- Dailies/
-|   +-- YYYY-MM-DD.md
+|   +-- 1 - Daily - YYYY-MM-DD.md
+|   +-- 2 - Daily - YYYY-MM-DD.md
+|   +-- N - Daily - YYYY-MM-DD.md
 +-- Notes/
-    +-- IPS.md
-    +-- Users.md
-    +-- Links.md
-    +-- Accounts.md
-    +-- TODO.md
+    +-- IPS.md                  # IPs, portas, hosts e infraestrutura
+    +-- Users.md                # Usuários de teste, papéis e permissões
+    +-- Links.md                # Repositórios, pipelines, Swagger, dashboards
+    +-- Accounts.md             # IDs de contas de serviços integrados
+    +-- TODO.md                 # Quadro atômico de tarefas (Em Progresso / Backlog / Concluido)
 ```
 
 ---
 
-## 3. Guia Operacional: Como Ler, Escrever e Editar no Linux
+## 3. Bootstrapping & Scaffolding Automático de Projetos
 
-Para manipular as dailies e notas do projeto no Linux (nativo ou WSL), siga rigorosamente os seguintes padrões de operação:
+Caso a pasta do projeto `"$DAILIES_DIR/<Nome do Projeto>"` não exista ao executar a skill, o agente **DEVE inicializá-la automaticamente**:
 
-### A) Como Ler (Reading)
+1. **Criação dos Diretórios**:
+   ```bash
+   DIR="${DAILIES_DIR}/<Nome do Projeto>"
+   mkdir -p "$DIR/Dailies" "$DIR/Notes"
+   ```
 
-1. **Leitura Completa ou Inspeção Estruturada**:
-   - **Ferramenta Nativa do Agente**: Utilize `view_file` com o caminho absoluto entre aspas.
-   - **Via Terminal Shell**:
-     ```bash
-     DIR="${DAILIES_DIR}/MeuProjeto"
-     cat "$DIR/Dailies/2026-08-17.md"
-     cat "$DIR/Notes/TODO.md"
-     ```
+2. **Criação do `Index.md` Inicial**:
+   - Instancie a partir do template `templates/Projects/index.base.md`.
+   - Preencha o nome do projeto, slug, data de criação e uma descrição inicial do projeto.
 
-2. **Leitura Parcial de Cabeçalhos e Finais**:
-     ```bash
-     head -n 15 "$DIR/Dailies/2026-08-17.md"
-     tail -n 20 "$DIR/Notes/TODO.md"
-     ```
-
-3. **Descoberta e Ordenação da Daily Anterior**:
-   - Para localizar a daily mais recente anterior a hoje:
-     ```bash
-     ls -1 "$DIR/Dailies/" | grep -E "^[0-9]{4}-[0-9]{2}-[0-9]{2}\.md$" | sort | tail -n 1
-     ```
-
-4. **Busca Textual em Notas**:
-     ```bash
-     grep -rn "192.168" "$DIR/Notes/IPS.md"
-     grep -rn "\[ \]" "$DIR/Notes/TODO.md"
-     ```
+3. **Criação dos Cadernos de Apoio (`Notes/`)**:
+   - `Notes/IPS.md`: a partir de `templates/Projects/notes.base.md` com categoria `IPS`.
+   - `Notes/Users.md`: a partir de `templates/Projects/notes.base.md` com categoria `Users`.
+   - `Notes/Links.md`: a partir de `templates/Projects/notes.base.md` com categoria `Links`.
+   - `Notes/Accounts.md`: a partir de `templates/Projects/notes.base.md` com categoria `Accounts`.
+   - `Notes/TODO.md`: a partir de `templates/Projects/todo.base.md`.
 
 ---
 
-### B) Como Escrever / Criar (Writing / Creating)
+## 4. Sistema de Numeração Sequencial de Dailies (`N - Daily - YYYY-MM-DD`)
 
-1. **Criação da Daily do Dia**:
-   - **Ferramenta Nativa do Agente**: Utilize `write_to_file` com caminho absoluto `"$DAILIES_DIR/<Nome do Projeto>/Dailies/YYYY-MM-DD.md"`.
-   - **Via Terminal Shell (Heredoc Seguro)**:
+Toda daily possui uma **numeração sequencial contínua** (`1`, `2`, `3`, ..., `N`), facilitando a ordenação cronológica e a rastreabilidade histórica.
+
+### A) Nomenclatura e Título
+- **Nome do Arquivo**: `"$DIR/Dailies/<N> - Daily - <YYYY-MM-DD>.md"` (Exemplo: `1 - Daily - 2026-08-17.md`, `2 - Daily - 2026-08-18.md`).
+- **Título do Documento**: `# <N> - Daily - <YYYY-MM-DD>`.
+
+### B) Algoritmo para Determinar a Sequência e Daily Anterior
+
+1. **Verificar se já existe Daily hoje**:
+   - Liste os arquivos em `"$DIR/Dailies/"` que terminam com `{{DATE}}.md` (ex: `* - Daily - 2026-08-17.md`).
+   - Se já existir uma daily para a data de hoje, **atualize o arquivo existente**, mantendo a mesma numeração sequencial.
+
+2. **Calcular Próximo Número Sequencial (Nova Daily)**:
+   - Liste todas as dailies existentes:
      ```bash
-     cat <<'EOF' > "$DIR/Dailies/2026-08-17.md"
-     # Daily - 2026-08-17
-
-     **Daily anterior:** [[2026-08-16]]
-
-     **O que fiz:**
-     - Criado pipeline de CI no GitHub Actions
-     - Implementado middleware de autenticacao JWT
-
-     **O que vou fazer:**
-     - Escrever testes de integracao para o servico de pagamento
-     - Mapear documentacao OpenAPI dos endpoints
-
-     **Pendencias:**
-     - Nenhuma
-     EOF
+     ls -1 "$DIR/Dailies/" | grep -E "^[0-9]+ - Daily - [0-9]{4}-[0-9]{2}-[0-9]{2}\.md$"
      ```
+   - Extraia o maior número no prefixo (exemplo: se o último for `5 - Daily - 2026-08-16.md`, o maior é `5`).
+   - A nova daily terá sequência `N = maior + 1` (exemplo: `6`).
+   - Se não houver nenhuma daily anterior, `N = 1`.
 
-2. **Inicialização das Notas de Apoio (Se Inexistentes)**:
-   - Copie ou renderize a partir dos templates base localizados em `templates/Projects/`:
-     - `Notes/IPS.md` a partir de `notes.base.md` com cabeçalho `# IPS - <Nome do Projeto>`
-     - `Notes/Users.md` a partir de `notes.base.md` com cabeçalho `# Users - <Nome do Projeto>`
-     - `Notes/Links.md` a partir de `notes.base.md` com cabeçalho `# Links - <Nome do Projeto>`
-     - `Notes/Accounts.md` a partir de `notes.base.md` com cabeçalho `# Accounts - <Nome do Projeto>`
-     - `Notes/TODO.md` a partir de `todo.base.md` com cabeçalho `# TODO - <Nome do Projeto>`
+3. **Link da Daily Anterior**:
+   - Se houver daily anterior (ex: `5 - Daily - 2026-08-16.md`), defina o link como `[[5 - Daily - 2026-08-16]]`.
+   - Se for a primeira daily (`N = 1`), defina como `Nenhuma`.
 
----
-
-### C) Como Editar / Modificar (Editing / Modifying)
-
-1. **Edição Estruturada de Blocos (Recomendado)**:
-   - **Ferramenta Nativa do Agente**: Utilize `replace_file_content` ou `multi_replace_file_content` especificando com precisão `StartLine`, `EndLine`, `TargetContent` e `ReplacementContent`.
-
-2. **Acréscimo de Linhas e Itens (Append Seguro)**:
-   - Para adicionar novas linhas no final de uma nota sem sobrescrever o conteúdo:
-     ```bash
-     cat <<'EOF' >> "$DIR/Notes/Links.md"
-     | Dashboard Grafana | https://grafana.exemplo.com | Metricas de producao |
-     EOF
-     ```
-
-3. **Movimentação e Atualização de Tarefas no `TODO.md`**:
-   - Ao concluir uma tarefa em andamento:
-     1. Localize o item `- [ ] Descricao da tarefa` na seção `## [Em Progresso]`.
-     2. Mova o item para a seção `## [Concluido]` marcando como `- [x] Descricao da tarefa (YYYY-MM-DD)`.
-     3. Promova o próximo item de `## [Backlog]` para `## [Em Progresso]`.
-   - Realize essa edição via `replace_file_content` para manter a integridade visual da nota.
-
-4. **Substituições Pontuais via Shell**:
-   - Para correções rápidas de texto ou IP:
-     ```bash
-     sed -i 's/10.0.0.1/10.0.0.2/g' "$DIR/Notes/IPS.md"
-     ```
+4. **Atualização do `Index.md`**:
+   - Após salvar a nova daily, adicione uma linha na tabela de histórico do `Index.md`:
+     `| <N> | [[<N> - Daily - <YYYY-MM-DD>]] | <YYYY-MM-DD> | <Destaques em 1 frase> |`
 
 ---
 
-### D) Regras Operacionais e Proibições
+## 5. Dupla Camada de Linguagem: Simples + Detalhamento Técnico
 
-1. **PROIBIDO USO DE PYTHON PARA PERSISTÊNCIA**:
-   - Não utilize scripts Python (`python`, `open()`, `pathlib.Path.write_text()`) para criar ou editar arquivos de daily ou notas.
-   - Utilize exclusivamente ferramentas nativas do agente (`write_to_file`, `replace_file_content`) ou utilitários shell padrão (`cat`, `sed`).
-
-2. **Uso Obrigatório de Aspas Duplas**:
-   - Todos os caminhos no shell DEVEM estar entre aspas duplas para evitar quebras com espaços no Linux/WSL (`"$DAILIES_DIR"`).
-
-3. **Preservação de Integridade**:
-   - Nunca sobrescreva notas de apoio existentes (`IPS.md`, `Users.md`, `Links.md`, `Accounts.md`, `TODO.md`) sem ler seu conteúdo prévio. As atualizações devem ser sempre incrementais.
-
----
-
-## 4. Fluxo de Execução em 5 Etapas
-
-### Etapa 1: Resolução de Caminhos e Scaffolding
-- Verifique se os diretórios `"$DAILIES_DIR/<Nome do Projeto>/Dailies"` e `"$DAILIES_DIR/<Nome do Projeto>/Notes"` existem. Se não existirem, crie-os imediatamente.
-
-### Etapa 2: Inicialização de Notas de Apoio (Se Inexistentes)
-Se os arquivos de notas em `Notes/` ainda não existirem, instancie-os a partir dos templates base:
-- `IPS.md`: Baseado em `templates/Projects/notes.base.md` com categoria `IPS`.
-- `Users.md`: Baseado em `templates/Projects/notes.base.md` com categoria `Users`.
-- `Links.md`: Baseado em `templates/Projects/notes.base.md` com categoria `Links`.
-- `Accounts.md`: Baseado em `templates/Projects/notes.base.md` com categoria `Accounts`.
-- `TODO.md`: Baseado em `templates/Projects/todo.base.md`.
-
-### Etapa 3: Descoberta da Daily Anterior
-- Liste os arquivos existentes em `"$DAILIES_DIR/<Nome do Projeto>/Dailies/"`.
-- Identifique o arquivo com a data mais recente estritamente anterior à data de hoje (`YYYY-MM-DD.md`).
-- Se houver daily anterior (exemplo: `2026-08-16.md`), defina o link como `[[2026-08-16]]` ou `2026-08-16`.
-- Se for a primeira daily do projeto, defina como `Nenhuma`.
-
-### Etapa 4: Coleta de Atividades
-- Inspecione as alterações recentes no repositório ativo via `rtk git log -n 5` e `rtk git diff` para extrair entregas concluídas, ou utilize as informações fornecidas pelo usuário no prompt.
-
-### Etapa 5: Gravação da Daily de Hoje
-- Crie ou atualize o arquivo `"$DAILIES_DIR/<Nome do Projeto>/Dailies/YYYY-MM-DD.md"` utilizando o template `daily.base.md`.
-- Aplique rigorosamente as melhores práticas de redação descritas abaixo.
-
----
-
-## 5. Guia de Melhores Práticas de Escrita e Redação Humana
-
-Para garantir que a daily seja de fácil leitura, rastreabilidade e alto valor para humanos, siga estas diretrizes:
-
-### A) Estrutura Padrão da Daily
+Para atender tanto a consultas rápidas/gerenciais quanto a necessidades profundas de engenharia, a Daily adota uma **dupla camada de redação**:
 
 ```markdown
-# Daily - YYYY-MM-DD
+---
+tags:
+  - project
+  - project/meu-projeto
+  - daily
+  - daily/2026
+date: 2026-08-17
+sequence: 1
+project: MeuProjeto
+---
 
-**Daily anterior:** [[YYYY-MM-DD]]
+# 1 - Daily - 2026-08-17
+
+**Projeto:** [[Index|MeuProjeto]] | **Daily anterior:** Nenhuma | **TODO:** [[Notes/TODO|TODO]]
 
 **O que fiz:**
-- <item conciso 1>
-- <item conciso 2>
+- Criado sistema de autenticacao de usuarios com JWT e rotas de login
+- Adicionada validacao de dados de entrada no cadastro de clientes
 
 **O que vou fazer:**
-- <item conciso 1>
-- <item conciso 2>
+- Implementar fluxo de recuperacao de senha por email
+- Escrever testes automatizados para as rotas de autenticacao
 
 **Pendencias:**
-- <bloqueio ou impedimento opcional>
-```
-
-### B) Padrões de Conteúdo e Gramática
-
-1. **Orientação a Resultados (Sem Rodeios)**:
-   - Evite frases genéricas como "trabalhei no backend" ou "estudei o código".
-   - Descreva entregas e mudanças concretas: "Implementado validador de CPF no serializer de clientes", "Configurado pool de conexões do PostgreSQL".
-
-2. **Convenção Verbal de Alto Impacto**:
-   - **O que fiz**: Utilize verbos no passado/particípio afirmativo:
-     - "Criado...", "Implementado...", "Corrigido...", "Refatorado...", "Documentado...", "Configurado...".
-   - **O que vou fazer**: Utilize verbos no infinitivo:
-     - "Escrever testes unitários para a camada de serviço...", "Configurar rotas no API Gateway...", "Executar migrações em staging...".
-   - **Pendencias**: Descreva impedimentos, bloqueios ou dependências externas reais:
-     - "Aguardando liberação de credenciais de acesso ao bucket S3 pelo time de DevOps".
-     - Se não houver pendências no dia, a seção pode ser omitida ou preenchida com `- Nenhuma`.
-
-3. **Concisão e Sequencialidade**:
-   - Cada bullet point deve conter entre 1 e 2 linhas no máximo.
-   - Mantenha os tópicos em ordem lógica de prioridade ou execução.
-
-4. **Formato para Humanos (Sem Bloat de IA)**:
-   - Não adicione preâmbulos como `## For future Claude`, tags YAML excessivas ou blocos de metadados complexos. O arquivo deve ser legível diretamente em qualquer editor de Markdown.
-
-### C) Padrões de Manutenção das Notas de Apoio (`Notes/`)
-
-1. **IPS.md**:
-   - Registrar endereços de IP de infraestrutura, servidores locais, instâncias de banco de dados e containers, associando a porta e o propósito.
-2. **Users.md**:
-   - Registrar emails de teste, identificadores de papéis (Admin, Operador, Cliente) e responsáveis técnicos, sem nunca expor senhas reais em texto claro.
-3. **Links.md**:
-   - Centralizar URLs de repositórios, pipelines CI/CD, ambientes de homologação, Swagger/OpenAPI, dashboards de monitoramento e documentações.
-4. **Accounts.md**:
-   - Mapear identificadores de contas de serviços integrados (AWS Account ID, Stripe Client ID, Sentry Project Key).
-5. **TODO.md**:
-   - Manter listas atômicas de tarefas distribuídas em `## [Em Progresso]`, `## [Backlog]` e `## [Concluido]`.
+- Nenhuma
 
 ---
 
-## 6. Como Invocar
+## Detalhamento Técnico & Decisões
+
+### Motivação & Raciocínio (Por que)
+- Adotado padrão JWT stateless para permitir escalabilidade horizontal dos nós de API sem necessidade de sessão compartilhada no Redis neste estágio inicial.
+- A validação foi desacoplada no nível do Serializer para garantir falha rápida (fail-fast) antes de atingir o banco de dados.
+
+### Implementação & Arquitetura (Como)
+- Configurado `djangorestframework-simplejwt` com tokens de acesso de 15 minutos e refresh token de 7 dias com rotação ativada.
+- Criada classe base `BaseCustomSerializer` com métodos customizados para formatação de erros em formato RFC 7807.
+
+### Impactos & Mudanças Técnicas
+- Novas tabelas de blacklist de tokens migradas via migração `0002_jwt_blacklist.py`.
+- Adicionadas variáveis `JWT_SIGNING_KEY` e `JWT_LIFETIME` no `.env.example`.
+```
+
+### Diretrizes para a Camada de Linguagem Simples
+- **Acessibilidade**: Frases simples, fáceis de explicar para qualquer membro do time ou stakeholder.
+- **Verbos de Ação**:
+  - *O que fiz*: "Criado...", "Implementado...", "Corrigido...", "Configurado...".
+  - *O que vou fazer*: "Escrever...", "Configurar...", "Executar...", "Testar...".
+- **Sem Jargões Desnecessários**: Foco no resultado e entrega tangível.
+
+### Diretrizes para a Camada Técnica
+- **Motivação e Porquê**: Explicar a razão técnica da decisão, causas raízes de bugs ou critérios de escolha entre alternativas.
+- **Como e Arquitetura**: Detalhar bibliotecas, patterns (Service Layer, Factory, etc.), fluxos de dados e contratos de interface.
+- **Impactos**: Migrações de banco, quebras de compatibilidade, segurança, performance e novas variáveis de ambiente.
+
+---
+
+## 6. Integração com `/second-brain` (Vault do Obsidian)
+
+Quando a daily envolver **decisões arquiteturais duráveis, lições aprendidas ou mudanças de modelo de domínio**, o agente deve ativar o ecossistema `/second-brain`:
+
+1. **Decisões Arquiteturais Formais (ADR)**:
+   - Se uma decisão durável foi registrada no detalhamento técnico da daily, invoque `/obsidian-decide --formal` para criar ou atualizar o registro de decisão no cofre em `$OBSIDIAN_VAULT_PATH/wiki/decisions/`.
+2. **Sincronização de Repositório**:
+   - Invoque `/save-project-brain` ou `/obsidian-project` para sincronizar novas rotas, URLs, arquitetura e estado do Git com a nota do projeto no cofre.
+3. **Tarefas de Longo Prazo**:
+   - Caso surjam impedimentos ou débitos técnicos duráveis, utilize `/obsidian-task` para registrar a pendência no quadro geral do Second Brain.
+
+---
+
+## 7. Indexação, Tags e Busca no Obsidian
+
+Para garantir que o cofre do Obsidian localize rapidamente qualquer daily ou projeto:
+
+### A) Frontmatter Obrigatório em Todas as Dailies
+```yaml
+---
+tags:
+  - project
+  - project/<slug-do-projeto>
+  - daily
+  - daily/<ano>
+date: YYYY-MM-DD
+sequence: <N>
+project: <Nome do Projeto>
+---
+```
+
+### B) Tags Recomendadas no `Index.md`
+```yaml
+---
+tags:
+  - project
+  - project/<slug-do-projeto>
+  - daily-index
+date_created: YYYY-MM-DD
+project: <Nome do Projeto>
+---
+```
+
+### C) Facilidades de Busca no Obsidian
+- **Busca por Projeto**: `tag:#project/<slug-do-projeto>` retorna todas as dailies e o índice do projeto.
+- **Busca por Daily Específica**: `file:"1 - Daily"` ou `tag:#daily`.
+- **Busca por Índices**: `tag:#daily-index`.
+- **Compatibilidade Dataview**: O frontmatter padronizado permite que queries Dataview no Obsidian agrupem facilmente o histórico de dailies por projeto.
+
+---
+
+## 8. Guia Operacional: Como Ler, Escrever e Editar no Linux
+
+Para manipular os arquivos no Linux (nativo ou WSL), siga rigorosamente os padrões de terminal e ferramentas nativas:
+
+### A) Como Ler (Reading)
+- **Ferramenta do Agente**: `view_file` com caminho absoluto entre aspas.
+- **Via Shell**:
+  ```bash
+  DIR="${DAILIES_DIR}/MeuProjeto"
+  cat "$DIR/Index.md"
+  cat "$DIR/Dailies/1 - Daily-2026-08-17.md"
+  ```
+
+### B) Como Escrever / Criar (Writing / Creating)
+- **Ferramenta do Agente**: `write_to_file` com caminho absoluto.
+- **Via Shell**: Heredoc seguro com aspas simples para proteger variáveis:
+  ```bash
+  cat <<'EOF' > "$DIR/Dailies/1 - Daily-2026-08-17.md"
+  ...
+  EOF
+  ```
+
+### C) Como Editar / Modificar (Editing / Modifying)
+- **Ferramenta do Agente**: `replace_file_content` para substituição de blocos específicos.
+- **Adicionar Linha ao `Index.md` (Append na Tabela)**:
+  ```bash
+  cat <<'EOF' >> "$DIR/Index.md"
+  | 2 | [[2 - Daily - 2026-08-18]] | 2026-08-18 | Implementado fluxo de recuperacao de senha |
+  EOF
+  ```
+
+### D) Regras Operacionais e Proibições
+1. **PROIBIDO USO DE PYTHON PARA PERSISTÊNCIA**: Não utilize scripts Python para criar ou editar notas de daily ou índices. Utilize exclusivamente ferramentas nativas (`write_to_file`, `replace_file_content`) ou utilitários shell (`cat`, `sed`, `mkdir`).
+2. **Uso Obrigatório de Aspas Duplas**: Todos os caminhos no shell DEVEM estar entre aspas duplas (`"$DAILIES_DIR"`).
+3. **Preservação Incremental**: Nunca sobrescreva notas existentes sem ler seu conteúdo prévio.
+
+---
+
+## 9. Fluxo de Execução em 6 Etapas
+
+### Etapa 1: Resolução de Variáveis e Nome do Projeto
+- Resolva `$DAILIES_DIR` e o nome canônico do projeto.
+
+### Etapa 2: Bootstrapping do Projeto (Se Inexistente)
+- Se `"$DAILIES_DIR/<Nome do Projeto>"` não existir, crie as pastas `Dailies/` e `Notes/`, instancie o `Index.md` e as notas de apoio (`IPS.md`, `Users.md`, `Links.md`, `Accounts.md`, `TODO.md`).
+
+### Etapa 3: Determinação da Sequência e Daily Anterior
+- Liste as dailies em `"$DAILIES_DIR/<Nome do Projeto>/Dailies/"`.
+- Calcule o número sequencial `N` e obtenha o link da daily anterior `[[<N-1> - Daily - <Data>]]` (ou `Nenhuma`).
+
+### Etapa 4: Coleta de Atividades e Contexto Técnico
+- Inspecione alterações recentes no repositório (`rtk git log -n 5`, `rtk git diff`) e/ou utilize as informações fornecidas no prompt para extrair tanto as entregas simples quanto as decisões técnicas e motivos.
+
+### Etapa 5: Gravação da Daily Sequencial
+- Crie ou atualize o arquivo `"$DAILIES_DIR/<Nome do Projeto>/Dailies/<N> - Daily - <YYYY-MM-DD>.md"` preenchendo as duas camadas (Simples + Técnica).
+- Atualize a tabela de histórico no `Index.md`.
+
+### Etapa 6: Sincronização com Second Brain (Se Aplicável)
+- Se houver decisões arquiteturais duráveis, invoque `/second-brain` (`/obsidian-decide`, `/obsidian-project` ou `/save-project-brain`) para registrar no cofre central do Obsidian.
+
+---
+
+## 10. Como Invocar
 
 No terminal ou chat:
 ```text
@@ -256,5 +292,5 @@ No terminal ou chat:
 ```
 ou em linguagem natural:
 ```text
-Crie a daily de hoje para o projeto MeuProjeto com o resumo das atividades recentes.
+Crie a daily de hoje para o projeto MeuProjeto detalhando o que foi feito de forma simples e técnica.
 ```
