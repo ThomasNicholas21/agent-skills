@@ -1,65 +1,38 @@
-# Knowledge: Validação em 3 Níveis em Serializers
+# Knowledge: Validação em 3 Níveis no Serializer
 
----
-
-## 1. Nível 1: Validação de Campo e Validadores Declarativos
-
-Aplicada diretamente na definição do campo ou via função em `validators=[...]`:
-
+## 1. Nível 1: Validação de Campo Declarativa
+Aplicada na definição do campo ou em `validators=[...]`:
 ```python
-from rest_framework import serializers
-
-def validate_positive_amount(value):
+def validate_positive(value):
     if value <= 0:
-        raise serializers.ValidationError("O valor deve ser estritamente positivo.")
+        raise serializers.ValidationError("O valor deve ser positivo.")
+
 
 class PaymentSerializer(serializers.Serializer):
     amount = serializers.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        validators=[validate_positive_amount]
+        max_digits=10, decimal_places=2, validators=[validate_positive]
     )
 ```
 
----
-
-## 2. Nível 2: Validação de Campo Único (`validate_<field_name>`)
-
-Método de instância para validar e sanitizar um único campo. Recebe o valor de entrada e deve retornar o valor tratado ou lançar `serializers.ValidationError`:
-
+## 2. Nível 2: Validação de Campo Único (`validate_<field>`)
+Para regras de negócio que dependem de apenas um campo:
 ```python
-class UserSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=50)
-
-    def validate_username(self, value):
-        if not value.isalnum():
-            raise serializers.ValidationError("O nome de usuário deve conter apenas letras e números.")
-        return value.lower()
+def validate_code(self, value):
+    if not value.isupper():
+        raise serializers.ValidationError("O código deve ser maiúsculo.")
+    return value
 ```
 
----
-
-## 3. Nível 3: Validação Cruzada entre Campos (`validate`)
-
-Método de instância para validar dependências entre dois ou mais campos. Recebe o dicionário `attrs` contendo os campos pré-validados pelos níveis anteriores:
-
+## 3. Nível 3: Validação Cruzada Multi-Campo (`validate`)
+Para regras que comparam múltiplos campos:
 ```python
-class DateRangeSerializer(serializers.Serializer):
-    start_date = serializers.DateField()
-    end_date = serializers.DateField()
-
-    def validate(self, attrs):
-        if attrs["start_date"] >= attrs["end_date"]:
-            raise serializers.ValidationError({
-                "end_date": "A data final deve ser estritamente posterior à data inicial."
-            })
-        return attrs
+def validate(self, attrs):
+    if attrs.get("start_date") > attrs.get("end_date"):
+        raise serializers.ValidationError(
+            {"end_date": "Data final deve ser posterior à inicial."}
+        )
+    return attrs
 ```
 
----
-
-## 4. Regra de Escolha do Nível de Validação
-
-- **Regra de 1 campo solto**: Use `validate_<field_name>()`.
-- **Regra dependente de 2 ou mais campos**: Use `validate(self, attrs)`.
-- **Validação de Modelo**: Restrições do modelo e mensagens de erro do banco DEVEM ser configuradas no **Model**, sendo herdadas automaticamente por `ModelSerializer`.
+## 4. Onde Validar Regras de Banco
+Restrições de banco (unicidade, integridade referencial) pertencem ao **Model** (`Meta.constraints`, `clean()`), permitindo que o `ModelSerializer` as herde automaticamente.

@@ -1,5 +1,4 @@
 # Example: Docstrings Multilinha (Multi-line Docstring)
-
 ```python
 from decimal import Decimal
 from apps.payments.models import Payment, PaymentResult
@@ -7,9 +6,7 @@ from apps.payments.exceptions import GatewayTimeoutError
 
 
 def process_payment(
-    payment: Payment,
-    *,
-    capture_immediately: bool = True
+    payment: Payment, *, capture_immediately: bool = True
 ) -> PaymentResult:
     """
     Process a payment transaction through the external payment gateway.

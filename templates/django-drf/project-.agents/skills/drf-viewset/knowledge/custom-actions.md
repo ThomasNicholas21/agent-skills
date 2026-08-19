@@ -1,48 +1,37 @@
 # Knowledge: Operações Customizadas com @action em ViewSets
 
-Quando um recurso possui uma operação que pertence semanticamente ao seu contexto mas não é uma operação CRUD padrão (ex: `set_password`, `deactivate`, `recent_items`), utiliza-se o decorador `@action`.
+Para operações que pertencem ao recurso mas estão fora do CRUD padrão, use o decorador `@action`.
 
----
-
-## 1. `@action(detail=True)` vs `@action(detail=False)`
-
-### A. `@action(detail=True)` (Ação em Nível de Objeto)
-- Opera sobre um recurso específico identificado na URL pelo parâmetro `pk` ou `lookup_field`.
-- Rota gerada pelo Router: `/resources/{pk}/set_password/`
-- Pode chamar `self.get_object()` internamente para carregar o objeto e aplicar permissões de objeto.
-
-### B. `@action(detail=False)` (Ação em Nível de Coleção)
-- Opera sobre a coleção inteira de recursos.
-- Rota gerada pelo Router: `/resources/recent_items/`
-- Não requer parâmetro `pk` na URL.
-
----
-
-## 2. Parâmetro `methods` em `@action`
-Por padrão, `@action` aceita apenas o verbo HTTP `GET`. Para permitir outros verbos, especifique a lista no argumento `methods`:
-
+## 1. `@action(detail=True)` (Ação em Nível de Objeto)
+Opera sobre um recurso específico (`/orders/{pk}/cancel/`):
 ```python
-@action(detail=True, methods=["post"])
-def set_password(self, request, pk=None):
-    user = self.get_object()
-    ...
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework import status
+
+
+class OrderViewSet(viewsets.ModelViewSet):
+    @action(detail=True, methods=["post"], url_path="cancel")
+    def cancel(self, request, pk=None):
+        order = self.get_object()
+        order.cancel()
+        return Response({"status": "cancelled"}, status=status.HTTP_200_OK)
 ```
 
----
-
-## 3. Sobrescrita de Configurações por `@action`
-
-Uma `@action` pode sobrescrever atributos de classe da ViewSet exclusivamente para a sua execução:
-
+## 2. `@action(detail=False)` (Ação em Nível de Coleção)
+Opera sobre o conjunto de recursos (`/orders/recent/`):
 ```python
-@action(
-    detail=True,
-    methods=["post"],
-    permission_classes=[IsAdminOrSelf],
-    serializer_class=SetPasswordSerializer
-)
-def set_password(self, request, pk=None):
-    ...
+class OrderViewSet(viewsets.ModelViewSet):
+    @action(detail=False, methods=["get"], url_path="recent")
+    def recent(self, request):
+        recent_orders = self.get_queryset()[:5]
+        serializer = self.get_serializer(recent_orders, many=True)
+        return Response(serializer.data)
 ```
 
-> **Regra para Agente**: NUNCA crie um ViewSet separado apenas porque uma operação específica possui uma regra de permissão ou serializador diferente. Utilize `@action` sobrescrevendo os parâmetros locais.
+## 3. Sobrescrita de Configurações na Action
+É possível sobrescrever `serializer_class`, `permission_classes` e `authentication_classes` por `@action`:
+```python
+@action(detail=True, methods=["post"], serializer_class=CancelOrderSerializer)
+def cancel(self, request, pk=None): ...
+```

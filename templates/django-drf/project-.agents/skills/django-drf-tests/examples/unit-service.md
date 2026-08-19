@@ -1,5 +1,4 @@
 # Example: Teste Unitário sem Banco de Dados (SimpleTestCase)
-
 ```python
 from decimal import Decimal
 from django.test import SimpleTestCase

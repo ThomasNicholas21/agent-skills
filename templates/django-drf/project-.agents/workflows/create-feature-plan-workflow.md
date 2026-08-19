@@ -1,180 +1,104 @@
 ---
 name: create-feature-plan-workflow
 description: >-
-  Workflow determinístico para planejamento e implementação de novas funcionalidades (Analyze-Before-Plan).
-  Realiza análise exploratória, debate híbrido com o usuário e executa o ciclo lazy em 3 fases
-  (Models First -> API Layer -> Business Logic) com roadmaps e planos incrementais.
-  Use sempre que o usuário invocar /create-feature-plan-workflow ou solicitar planejamento de novas features.
+  Analisa uma nova funcionalidade, discute requisitos e opções técnicas com o usuário,
+  e cria e executa planos de implementação incrementais após aprovação explícita.
 ---
 
-# Workflow: Plano de Nova Funcionalidade – Analyze Before Plan (create-feature-plan-workflow)
+# Workflow de Planejamento de Feature
+Utilize para planejamento e implementação de novas funcionalidades.
 
-Este workflow segue o padrão **Analyze-Before-Plan**: o agente investiga, debate com o usuário e só gera o plano de implementação sob comando explícito. A feature é dividida em **3 fases lazy** (Models → API → Business), cada uma com seu próprio `implementation_plan.md` gerado, aprovado e executado sequencialmente.
+## Gate 0 — Analisar Antes de Planejar
+NUNCA crie `implementation_plan.md` ou modifique código antes de:
+1. Analisar o requisito e o repositório.
+2. Verificar decisões do projeto e padrões existentes.
+3. Discutir requisitos e opções técnicas com o usuário.
+4. Receber aprovação explícita.
 
-> ⛔ **REGRA INVIOLÁVEL**: O agente é **PROIBIDO** de gerar `implementation_plan.md` em qualquer momento deste workflow sem que o usuário peça explicitamente (ex: "gere o plano", "pode criar", "monta o plano"). A fase de debate DEVE ocorrer primeiro.
+## 1. Analisar
+Construa o contexto técnico antes de propor soluções:
+- Compreenda o requisito sem fazer suposições.
+- Consulte o Second Brain quando arquitetura ou regras de negócio forem relevantes.
+- Busque models, APIs, services, padrões e testes existentes no repositório.
+- Identifique componentes afetados, dependências, restrições e riscos.
+- Determine o menor escopo viável.
+**Não modifique código nesta fase.**
 
----
+### Apresentação da Análise
+Apresente:
+- **Compreensão**: ...
+- **Padrões Existentes**: ...
+- **Áreas Afetadas**: ...
+- **Restrições**: ...
+- **Perguntas Abertas**: ...
+- **Opções Técnicas**: 1. ... 2. ...
+- **Recomendação**: ...
 
-## Fase A – Análise Exploratória
+Em seguida, discuta a abordagem com o usuário.
 
-Objetivo: Montar contexto técnico antes de qualquer discussão.
+## 2. Debate
+Não gere plano durante esta fase.
+- Esclareça requisitos funcionais e de negócio.
+- Resolva ambiguidades e valide premissas.
+- Compare abordagens técnicas viáveis.
+- Defina escopo e estratégia de testes.
+- Encerre as perguntas assim que a decisão estiver clara.
 
-1. **Entendimento da Demanda**: Leia e interprete o requisito do usuário sem fazer suposições.
-2. **Consulta ao Second Brain**: Execute `/obsidian-find <termo>` e `/obsidian-project` para resgatar ADRs, decisões históricas e padrões já utilizados no cofre.
-3. **Exploração do Repositório**: Inspecione o código existente com RTK para identificar:
-   - Models, Serializers, ViewSets e Services que tocam o mesmo domínio.
-   - Padrões de nomenclatura, mixins e abstrações já adotados.
-   - Testes existentes e cobertura da área impactada.
-4. **Síntese Silenciosa**: Organize internamente os achados. **NÃO** apresente um plano — apenas prepare-se para o debate.
+Quando a abordagem convergir, pergunte:
+> Requisitos e abordagem confirmados. Posso gerar o roadmap e o primeiro plano de implementação?
 
----
+Prossiga apenas após aprovação explícita.
 
-## Fase B – Debate Híbrido com o Usuário
+## 3. Roadmap
+Após a aprovação, crie `feature_roadmap.md` contendo:
+- Visão geral da funcionalidade.
+- Fases de implementação e status de cada fase.
+- Decisões tomadas durante o debate.
+- Dependências entre as fases.
 
-Objetivo: Alinhar requisitos, esclarecer ambiguidades e convergir na solução técnica.
+Fases padrão:
+1. **Models** — persistência e restrições de dados (`django-model`).
+2. **API** — serializers, views, ViewSets, schemas e URLs (`drf-serializer`, `drf-view`, `drf-viewset`, `drf-schema`, `django-drf-url`).
+3. **Regras de Negócio & Geração de fluxo de teste funcional** — regras de domínio, integrações e testes funcionais.
+Adapte ou remova fases se a funcionalidade não exigir. Persista decisões importantes no Second Brain quando aplicável.
 
-> ⛔ **GATE**: O agente NÃO gera nenhum plano nesta fase. Apenas faz perguntas e debate.
+## 4. Planejamento Lazy (Fase a Fase)
+Gere apenas o plano para a próxima fase pendente. Crie um `implementation_plan.md` por vez contendo:
+- **Contexto**: Fase atual e pré-requisitos concluídos.
+- **Escopo**: Arquivos/componentes que devem mudar.
+- **Solução**: Abordagem escolhida e justificativa técnica.
+- **Testes**: Testes necessários para validar a fase.
+- **Verificação**: Comandos e critérios de aceitação.
+- **Riscos**: Efeitos colaterais e dependências.
 
-### B.1 – Primeira Rodada: Perguntas Estruturadas
+O plano DEVE seguir Scope Lock e evitar refatorações não relacionadas.
 
-Apresente ao usuário uma lista organizada de perguntas, agrupadas por tema:
+## 5. Execução de Fase
+Para cada fase:
+1. Gere o plano da fase.
+2. Aguarde aprovação explícita.
+3. Execute apenas essa fase.
+4. Execute as verificações e testes relevantes.
+5. Atualize o roadmap.
+6. Pare e pergunte:
+> Fase N concluída. Posso gerar o plano para a Fase N+1?
 
-- **Requisitos Funcionais**: Quais entidades/recursos? Quais operações (CRUD, ações customizadas)? Quais campos obrigatórios?
-- **Regras de Negócio**: Quais validações e invariantes? Quais transições de estado? Existem dependências entre entidades?
-- **Edge Cases**: Cenários de concorrência? Soft delete vs hard delete? Limites de volume?
-- **Integrações**: Consome ou expõe APIs externas? Filas/eventos? Webhooks?
-- **Escopo e Prioridade**: MVP vs versão completa? Quais partes são essenciais vs nice-to-have?
+Não continue automaticamente para a próxima fase sem aprovação.
 
-### B.2 – Aprofundamento Socrático
+## Condições de Parada
+Pare e consulte o usuário se:
+- Requisitos permanecerem ambíguos.
+- A arquitetura entrar em conflito com decisões existentes do projeto.
+- Padrões existentes forem insuficientes para determinar a implementação.
+- A solução exigir arquivos ou alterações arquiteturais inesperadas.
+- Uma dependência obrigatória estiver ausente.
+- Testes revelarem regressões fora do escopo.
 
-Após as respostas da primeira rodada:
-
-1. Aprofunde **um ponto por vez**, fazendo perguntas de follow-up nos temas que ficaram ambíguos.
-2. Proponha alternativas técnicas quando houver mais de uma abordagem viável (ex: "podemos usar `choices` ou uma tabela separada — qual prefere?").
-3. Questione premissas implícitas (ex: "você mencionou soft delete — precisa de auditoria de quem deletou?").
-4. Continue até que **todos os pontos estejam resolvidos** e o usuário confirme que está satisfeito.
-
-### B.3 – Confirmação de Prontidão
-
-Quando o debate convergir, pergunte ao usuário:
-
-> "Todas as dúvidas estão resolvidas. Deseja que eu gere o roadmap e o primeiro plano de implementação (Models)?"
-
-**Só avance para a Fase C com resposta afirmativa explícita.**
-
----
-
-## Fase C – Roadmap e Planejamento Lazy
-
-Objetivo: Gerar o roadmap como memória do agente e o `implementation_plan.md` da próxima fase pendente.
-
-### C.1 – Gerar o Roadmap (`feature_roadmap.md`)
-
-Crie o artefato `feature_roadmap.md` no diretório de artefatos da conversa (`appDataDir/brain/<conversation-id>/`) com o seguinte template:
-
-```markdown
-# Feature Roadmap: <Nome da Feature>
-
-## Visão Geral
-<Resumo em 2-3 linhas do que a feature entrega>
-
-## Fases de Implementação
-
-| # | Fase | Status | Escopo Resumido |
-|---|------|--------|-----------------|
-| 1 | Models First | ⬜ Pendente | <resumo> |
-| 2 | API Layer | ⬜ Pendente | <resumo> |
-| 3 | Business Logic | ⬜ Pendente | <resumo> |
-
-**Legenda**: ⬜ Pendente · 🔄 Em Progresso · ✅ Concluída
-
-## Decisões do Debate
-- <decisão 1 alinhada com o usuário>
-- <decisão 2>
-- ...
-
-## Dependências Entre Fases
-- Fase 2 depende de: Models e migrações da Fase 1.
-- Fase 3 depende de: Endpoints da Fase 2 (para testes de integração).
-```
-
-Após criar, salve no Second Brain via `/obsidian-save` para rastreabilidade.
-
-### C.2 – Gerar `implementation_plan.md` da Fase Atual
-
-Gere **somente** o `implementation_plan.md` da próxima fase pendente no roadmap, seguindo o conteúdo específico de cada fase:
-
----
-
-#### Quando a Fase Atual for: **Fase 1 – Models First (Camada de Persistência)**
-
-- **Skills**: Invoque a skill `django-model`.
-- **Escopo do Plano**:
-  - Modelos Django (`models.py`), campos específicos (UUID, Decimal, etc.).
-  - Custom QuerySets e Managers encadeáveis (`managers.py`).
-  - Restrições de banco (`UniqueConstraint`, `CheckConstraint`) e Meta.
-  - Otimizações no Django Admin (`admin.py`).
-- **Entregável esperado**: Modelos criados, migrados e testados isoladamente.
-
----
-
-#### Quando a Fase Atual for: **Fase 2 – API Layer (Serializers, Views, ViewSets, Schemas e URLs)**
-
-- **Skills**: Invoque as skills `drf-serializer`, `drf-view`, `drf-viewset`, `drf-schema` e `drf-django-url`.
-- **Escopo do Plano**:
-  - `ModelSerializer` e `Serializer` (validações de 3 níveis, escrita aninhada manual com `transaction.atomic()`).
-  - ViewSets (`ModelViewSet`, `ReadOnlyModelViewSet`, `@action`) ou `APIView`.
-  - Módulo `schemas.py` com decoradores `@extend_schema_view` / `@extend_schema`.
-  - Roteamento modular (`urls.py`, `nested_urls.py`, `SimpleRouter`).
-- **Entregável esperado**: Endpoints RESTful funcionais e documentados no Swagger.
-
----
-
-#### Quando a Fase Atual for: **Fase 3 – Business Logic e Validações**
-
-- **Skills**: Invoque as skills `django-drf-tests`, (`python-typing` e `python-docstring` se estiver sendo utilizado no projeto).
-- **Escopo do Plano**:
-  - Camada de serviço (`services.py`), regras de negócio e integrações externas.
-  - Testes automatizados por camada (Model, Serializer, ViewSet, Service) usando `Model Factory Mixins` (`create_<model>(**kwargs)`).
-  - Asserções de performance de banco (`assertNumQueries`).
-- **Entregável esperado**: Suíte de testes automatizados passando e funcionalidade concluída.
-
----
-
-## Fase D – Ciclo Lazy de Execução
-
-Objetivo: Executar cada fase sequencialmente, atualizando o roadmap entre elas.
-
-```text
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│ Gerar Plano  │ ──► │ Usuário      │ ──► │ Executar     │ ──► │ Atualizar    │
-│ da Fase N    │     │ Aprova       │     │ Fase N       │     │ Roadmap      │
-│              │     │              │     │              │     │ (✅ Fase N)  │
-└──────────────┘     └──────────────┘     └──────────────┘     └──────┬───────┘
-                                                                      │
-                                                          ┌───────────▼──────────┐
-                                                          │ Há fase pendente?    │
-                                                          │ SIM → Volta ao topo  │
-                                                          │ NÃO → Feature pronta │
-                                                          └──────────────────────┘
-```
-
-### Regras do Ciclo:
-
-1. **Um plano por vez**: Sempre use o nome `implementation_plan.md`. O plano anterior é sobrescrito ao gerar o próximo.
-2. **Consulte o roadmap**: Antes de gerar cada plano, leia `feature_roadmap.md` para identificar a próxima fase pendente.
-3. **Atualize o roadmap**: Após executar cada fase, marque-a como ✅ no `feature_roadmap.md`.
-4. **Gate entre fases**: Ao terminar uma fase, pergunte ao usuário: "Fase N concluída. Deseja que eu gere o plano da Fase N+1?"
-5. **Persista no Second Brain**: Ao concluir a última fase, execute `/obsidian-save` para registrar a feature como concluída.
-
----
-
-## Formato do `implementation_plan.md`
-
-Cada plano gerado DEVE conter:
-
-- **Contexto da Fase**: Qual fase do roadmap está sendo implementada e o que já foi feito nas fases anteriores.
-- **Escopo Delimitado**: Somente os componentes desta fase — sem antecipar fases futuras.
-- **Justificativa Técnica (*why*)**: Para cada componente, explique o motivo da escolha.
-- **Snippets de Código de Referência**: Práticos e objetivos (sem prolixidade).
-- **Plano de Verificação**: Como validar que a fase foi concluída com sucesso (testes, migrações, endpoints).
+## Regras
+- Analise antes de planejar.
+- Debata antes de implementar.
+- Exija aprovação explícita em cada gate.
+- Crie um plano detalhado e com código que planeja implementar
+- Prefira padrões existentes no repositório e a menor solução viável.
+- Não antecipe requisitos futuros.
+- Mantenha apenas uma fase de implementação ativa por vez.

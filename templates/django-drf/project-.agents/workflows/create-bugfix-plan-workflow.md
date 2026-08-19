@@ -1,76 +1,79 @@
 ---
 name: create-bugfix-plan-workflow
 description: >-
-  Workflow determinístico para diagnóstico e correção de bugs (Analyze-Before-Plan).
-  Investiga a causa raiz com evidências empíricas (tracebacks, testes, blast radius),
-  conduz debate estruturado e gera implementation_plan.md somente sob aprovação explícita.
-  Use sempre que o usuário invocar /create-bugfix-plan-workflow ou pedir diagnóstico/correção de bugs.
+  Diagnostica bugs usando evidências, discute a causa raiz e a solução com o usuário,
+  e gera o plano de implementação apenas após aprovação explícita.
 ---
 
-# Workflow: Plano de Correção de Bugs – Analyze Before Plan (create-bugfix-plan-workflow)
+# Workflow de Correção de Bugs (Bugfix)
+Utilize este workflow para diagnóstico de bugs e planejamento de correções.
 
-Este workflow segue o padrão **Analyze-Before-Plan**: o agente investiga a causa raiz, debate com o usuário e só gera o plano de correção sob comando explícito.
+## Gate 0 — Analisar Antes de Planejar
+NUNCA crie `implementation_plan.md` ou modifique código antes de:
+1. Investigar o problema.
+2. Confirmar a causa raiz.
+3. Discutir a solução com o usuário.
+4. Receber aprovação explícita.
 
-> ⛔ **REGRA INVIOLÁVEL**: O agente é **PROIBIDO** de gerar `implementation_plan.md` em qualquer momento deste workflow sem que o usuário peça explicitamente (ex: "gere o plano", "pode criar", "monta o plano"). A fase de debate DEVE ocorrer primeiro.
+## 1. Analisar
+Investigue antes de propor uma solução:
+- Leia tracebacks, logs e o código relevante.
+- Reproduza o problema sempre que possível.
+- Inspecione e execute testes existentes relacionados.
+- Busque padrões e implementações semelhantes no repositório.
+- Consulte o Second Brain quando a decisão depender de arquitetura ou regras de negócio.
+- Determine: causa raiz, evidências, condições de reprodução, raio de impacto e arquivos afetados.
+**Não modifique código durante esta fase.**
 
----
+### Apresentação da Análise
+Apresente os achados de forma concisa:
+- **Causa Raiz**: ...
+- **Evidências**: ...
+- **Reprodução**: ...
+- **Raio de Impacto**: ...
+- **Hipóteses Alternativas**: ...
+- **Opções de Correção**: 1. ... 2. ...
+- **Recomendação**: ...
+Em seguida, discuta a abordagem com o usuário.
 
-## Fase A – Diagnóstico e Reprodução
+## 2. Debate
+Não gere plano durante esta fase.
+- Questione premissas e resolva ambiguidades.
+- Compare alternativas e trade-offs.
+- Confirme o impacto e a estratégia de testes.
+- Encerre as perguntas assim que a decisão estiver clara.
 
-Objetivo: Identificar a causa raiz com evidências empíricas antes de qualquer discussão.
+Quando a abordagem convergir, pergunte:
+> Causa raiz e abordagem confirmadas. Posso gerar o plano de implementação?
 
-1. **Análise de Traceback**: Leia a traceback completa de erros ou logs de exceção sem fazer suposições.
-2. **Execução de Código e Testes**: Execute os testes afetados (`rtk pytest`) ou scripts de reprodução em `scratch/` para observar o comportamento do erro em runtime.
-3. **Mapeamento de Causa Raiz**: Identifique o motivo exato pelo qual o bug ocorre (violação de contrato, `NullPointerException`, query N+1, falha de validação no Serializer, estado inconsistente no banco).
-4. **Avaliação de Blast Radius**: Utilize `rtk grep` para mapear quais módulos adjacentes podem ser afetados pela correção (efeitos colaterais).
+Prossiga apenas após aprovação explícita.
 
----
+## 3. Planejamento
+Somente após aprovação, crie `implementation_plan.md` contendo:
+- **Causa Raiz**: Causa raiz e evidências.
+- **Escopo**: Arquivos que devem mudar e o motivo.
+- **Solução**: Abordagem escolhida e justificativa técnica.
+- **Testes**: Testes de regressão necessários e reprodução do bug.
+- **Riscos**: Efeitos colaterais e raio de impacto.
+- **Verificação**: Comandos e critérios para validar a correção.
 
-## Fase B – Debate Híbrido com o Usuário
+O plano DEVE seguir Scope Lock e modificar apenas o estritamente necessário.
 
-Objetivo: Apresentar evidências, alinhar hipóteses e convergir na abordagem de correção.
+## 4. Condições de Parada
+Pare e consulte o usuário se:
+- A causa raiz não puder ser confirmada.
+- A solução entrar em conflito com a arquitetura estabelecida.
+- A correção exigir arquivos fora do escopo previsto.
+- Existirem múltiplas soluções viáveis sem dados suficientes para escolha.
+- Testes revelarem regressões fora do escopo.
+- Uma dependência obrigatória estiver ausente.
 
-> ⛔ **GATE**: O agente NÃO gera nenhum plano nesta fase. Apenas faz perguntas e debate.
-
-### B.1 – Primeira Rodada: Perguntas Estruturadas
-
-Apresente ao usuário as evidências coletadas e uma lista organizada de perguntas:
-
-- **Evidências Empíricas**: Traceback, output dos testes, logs de reprodução.
-- **Hipótese de Causa Raiz**: Qual é a explicação mais provável? Existem hipóteses alternativas?
-- **Reprodutibilidade**: O bug é determinístico ou intermitente? Depende de dados específicos ou estado?
-- **Blast Radius**: A correção pode impactar outros módulos? Quais contratos adjacentes são afetados?
-- **Cenários de Teste**: Quais cenários (happy path, edge cases) devem ser cobertos pelo teste de regressão?
-- **Prioridade**: Qual é o impacto do bug em produção? Precisa de hotfix ou pode seguir o fluxo normal?
-
-### B.2 – Aprofundamento Socrático
-
-Após as respostas da primeira rodada:
-
-1. Aprofunde **um ponto por vez**, investigando os detalhes que ficaram vagos.
-2. Questione premissas (ex: "você disse que o bug só acontece com dados X — já testou com Y?").
-3. Se houver múltiplas hipóteses, proponha testes de eliminação para confirmar a causa raiz.
-4. Continue até que a causa raiz esteja **confirmada** e a abordagem de correção esteja alinhada.
-
-### B.3 – Confirmação de Prontidão
-
-Quando o debate convergir, pergunte ao usuário:
-
-> "A causa raiz e a abordagem de correção estão confirmadas. Deseja que eu gere o plano de implementação?"
-
-**Só avance para a Fase C com resposta afirmativa explícita.**
-
----
-
-## Fase C – Geração do Plano de Correção
-
-Objetivo: Gerar `implementation_plan.md` somente sob comando explícito do usuário.
-
-### Formato do `implementation_plan.md`
-
-O documento de plano gerado DEVE conter:
-
-- **Diagnóstico da Causa Raiz**: Explicação clara do motivo pelo qual o bug ocorre, com evidências empíricas.
-- **Análise de Impacto (Blast Radius)**: Lista de componentes adjacentes afetados pela correção.
-- **Teste de Reprodução Automatizado**: Snippet de código do teste (usando skill `django-drf-tests` e `Model Factory Mixins`) que DEVE falhar antes da correção e passar após a correção.
-- **Correção Minimalista (Anti-Drift)**: Snippet do código corrigido com justificativa técnica (*why*), alterando estritamente os arquivos necessários sem refatorações oportunistas.
+## Regras
+- Analise antes de planejar.
+- Nunca implemente antes da abordagem ser aprovada.
+- Nunca crie `implementation_plan.md` sem aprovação explícita.
+- Prefira evidências a suposições.
+- Prefira a menor correção viável.
+- Não refatore código não relacionado.
+- Reutilize padrões existentes no repositório.
+- Crie um plano detalhado e com código que planeja implementar

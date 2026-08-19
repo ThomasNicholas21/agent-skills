@@ -1,5 +1,4 @@
 # Example: Teste de Endpoint DRF com APITestCase, force_authenticate e assertNumQueries
-
 ```python
 from rest_framework.test import APITestCase
 from rest_framework import status

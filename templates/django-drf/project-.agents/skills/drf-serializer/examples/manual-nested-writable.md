@@ -1,5 +1,4 @@
 # Example: Escrita Aninhada Manual com transaction.atomic() (Sem Libs Mágicas)
-
 Este exemplo demonstra o padrão seguro para atualização e criação aninhada manual:
 
 ```python
@@ -33,8 +32,7 @@ class OrderNestedCreateSerializer(serializers.ModelSerializer):
             order = Order.objects.create(**validated_data)
             order_items = [
                 OrderItem(
-                    order=order,
-                    **{k: v for k, v in item_data.items() if k != "id"}
+                    order=order, **{k: v for k, v in item_data.items() if k != "id"}
                 )
                 for item_data in items_data
             ]

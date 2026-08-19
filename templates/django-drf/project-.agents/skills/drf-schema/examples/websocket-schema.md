@@ -1,59 +1,33 @@
-# Example: Documentação e Validação de WebSocket com drf-spectacular-websocket
-
-### Arquivo `apps/chat/api/websocket/serializers.py` (Validação de Entrada):
+# Example: Documentação WebSocket com drf-spectacular-websocket
 
 ```python
-from rest_framework import serializers
-
-
-class ChatMessageInputSerializer(serializers.Serializer):
-    room_id = serializers.UUIDField()
-    message = serializers.CharField(max_length=1000)
-```
-
-### Arquivo `apps/chat/api/websocket/schemas.py` (Schema de Resposta Swagger):
-
-```python
-from rest_framework import serializers
-
-
-class ChatMessageOutputSchema(serializers.Serializer):
-    id = serializers.UUIDField()
-    sender = serializers.CharField()
-    message = serializers.CharField()
-    timestamp = serializers.DateTimeField()
-```
-
-### Arquivo `apps/chat/api/websocket/consumers.py` (Consumer do Django Channels):
-
-```python
+# apps/notifications/consumers.py
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
-from drf_spectacular_websocket.decorators import extend_ws_schema
-from .serializers import ChatMessageInputSerializer
-from .schemas import ChatMessageOutputSchema
+from drf_spectacular_websocket.schemas import extend_ws_schema
+from rest_framework import serializers
 
+class NotificationSendSchema(serializers.Serializer):
+    action = serializers.CharField(default="subscribe")
+    channel = serializers.CharField()
 
-class ChatConsumer(AsyncJsonWebsocketConsumer):
-    @extend_ws_schema(
-        type="send",
-        request=ChatMessageInputSerializer,
-        responses={
-            200: ChatMessageOutputSchema,
-            400: "Payload JSON Inválido",
-        },
-    )
-    async def receive_json(self, content, **kwargs):
-        serializer = ChatMessageInputSerializer(data=content)
-        if not serializer.is_valid():
-            await self.send_json({"error": serializer.errors}, close=False)
-            return
+class NotificationReceiveSchema(serializers.Serializer):
+    event = serializers.CharField()
+    payload = serializers.DictField()
 
-        # Lógica de broadcast ou envio de mensagem
-        response_data = {
-            "id": "msg-123",
-            "sender": self.scope["user"].username,
-            "message": serializer.validated_data["message"],
-            "timestamp": "2026-08-14T12:00:00Z",
-        }
-        await self.send_json(response_data)
+@extend_ws_schema(
+    type="send",
+    summary="Mensagem enviada pelo cliente ao conectar ou subscrever",
+    request=NotificationSendSchema,
+)
+@extend_ws_schema(
+    type="receive",
+    summary="Mensagem de notificação enviada pelo servidor",
+    responses={200: NotificationReceiveSchema},
+)
+class NotificationConsumer(AsyncJsonWebsocketConsumer):
+    async def connect(self):
+        await self.accept()
+
+    async def receive_json(self, content):
+        ...
 ```

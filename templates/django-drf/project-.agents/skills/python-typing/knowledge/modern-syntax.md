@@ -1,60 +1,30 @@
-# Knowledge: Sintaxe Moderna de Type Hints em Python (3.9+ / 3.10+ / 3.12+)
+# Knowledge: Sintaxe Moderna de Type Hints em Python (3.10+ / 3.12+)
 
----
-
-## 1. Generics Embutidos (`Built-in Generics` - Python 3.9+)
-
-É **estritamente proibido** importar `List`, `Dict`, `Set`, `Tuple` ou `FrozenSet` do módulo `typing`. O Python moderno permite parametrizar diretamente os tipos nativos:
-
+## 1. Built-in Generics (Python 3.9+)
+Proibido importar `List`, `Dict`, `Set`, `Tuple` de `typing`. Use tipos nativos:
 - `list[str]`
 - `dict[str, Decimal]`
 - `set[int]`
-- `tuple[str, int]` (tupla de tamanho fixo com elemento 0 str e elemento 1 int)
-- `tuple[int, ...]` (tupla homogênea de tamanho variável)
+- `tuple[str, int]` (fixo) / `tuple[int, ...]` (variável)
 
----
+## 2. Union e Optional com Pipe `|` (Python 3.10+)
+Proibido usar `Union` e `Optional`. Use a sintaxe de pipe:
+- `int | str` em vez de `Union[int, str]`
+- `str | None` em vez de `Optional[str]`
 
-## 2. Abstrações de Coleções (`collections.abc`)
-
-Para parâmetros de funções, prefira tipos abstratos do módulo `collections.abc` em vez de exigir tipos concretos:
-
+## 3. Collections Abstractions (`collections.abc`)
+Em argumentos de funções, use abstrações em vez de tipos concretos:
 ```python
 from collections.abc import Sequence, Mapping, Iterable, Callable
-from decimal import Decimal
 
-# Preferir Sequence (aceita list, tuple) em vez de obrigar list
-def calculate_total(values: Sequence[Decimal]) -> Decimal:
-    return sum(values, Decimal("0"))
 
-# Preferir Mapping (aceita dict, OrderedDict) em vez de dict
-def process_headers(headers: Mapping[str, str]) -> None:
-    ...
+def process_items(items: Sequence[Item]) -> list[Result]: ...
 ```
 
----
-
-## 3. União (`|`) e Opcionais (`T | None` - Python 3.10+)
-
-É **estritamente proibido** importar `Union` ou `Optional` do módulo `typing`.
-
-```python
-# União de tipos (A | B)
-def parse_id(value: int | str) -> int:
-    return int(value)
-
-# Retorno opcional (T | None)
-def find_user(user_id: int) -> User | None:
-    ...
-```
-
----
-
-## 4. Modern Type Aliases (`type` Statement - Python 3.12+)
-
-A partir do Python 3.12, aliases de tipos são declarados nativamente com a instrução `type`:
-
+## 4. Modern Type Aliases (Python 3.12+)
+Use a palavra-chave nativa `type`:
 ```python
 type UserId = int
 type JsonDict = dict[str, object]
-type ServerAddress = tuple[str, int]
+type Coordinates[T] = tuple[T, T]
 ```

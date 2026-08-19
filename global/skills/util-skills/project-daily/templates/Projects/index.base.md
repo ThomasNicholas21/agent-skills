@@ -1,13 +1,16 @@
 ---
 tags:
-  - project
-  - project/{{PROJECT_SLUG}}
+  - projects
+  - projects/{{PROJECT_SLUG}}
+  - projects/{{PROJECT_SLUG}}/index
   - daily-index
 date_created: {{DATE}}
 project: {{PROJECT_NAME}}
 ---
 
-# {{PROJECT_NAME}} - Hub & Índice do Projeto
+# {{PROJECT_NAME}} - Hub & Índice de Dailies
+
+**Metadados & Tags:** [[project|ℹ️ Informações do Projeto]]
 
 ## Visão Geral do Projeto
 {{PROJECT_DESCRIPTION}}
@@ -32,4 +35,4 @@ project: {{PROJECT_NAME}}
 ---
 
 ## Tags de Busca no Obsidian
-`#project` `#project/{{PROJECT_SLUG}}` `#daily-index`
+`#projects` `#projects/{{PROJECT_SLUG}}` `#projects/{{PROJECT_SLUG}}/index` `#daily-index`

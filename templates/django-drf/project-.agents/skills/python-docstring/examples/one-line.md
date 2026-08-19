@@ -1,5 +1,4 @@
 # Example: Docstrings de Linha Única (One-line Docstring)
-
 ```python
 from decimal import Decimal
 from apps.users.models import User

@@ -1,8 +1,5 @@
 # Knowledge: Troca Dinâmica de Serializer por Action
-
 Listagens de tabelas volumosas não devem serializar grafos de objetos profundos.
-
----
 
 ## 1. Padrão `get_serializer_class`
 
@@ -17,8 +14,6 @@ class OrderViewSet(viewsets.ModelViewSet):
             return OrderWriteSerializer
         return super().get_serializer_class()
 ```
-
----
 
 ## 2. Vantagens
 - **Listings Rápidos**: `OrderListSerializer` retorna apenas IDs e totais, sem carregar sub-itens ou descrições longas.

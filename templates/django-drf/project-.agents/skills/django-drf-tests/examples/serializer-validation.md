@@ -1,5 +1,4 @@
 # Example: Teste de Validação e Representação de Serializer
-
 ```python
 from decimal import Decimal
 from django.test import TestCase

@@ -1,7 +1,8 @@
 ---
 tags:
-  - project
-  - project/{{PROJECT_SLUG}}
+  - projects
+  - projects/{{PROJECT_SLUG}}
+  - projects/{{PROJECT_SLUG}}/daily
   - daily
   - daily/{{YEAR}}
 date: {{DATE}}
@@ -11,7 +12,7 @@ project: {{PROJECT_NAME}}
 
 # {{SEQUENCE}} - Daily - {{DATE}}
 
-**Projeto:** [[Index|{{PROJECT_NAME}}]] | **Daily anterior:** {{PREVIOUS_DAILY_LINK}} | **TODO:** [[Notes/TODO|TODO]]
+**Projeto:** [[../project|{{PROJECT_NAME}}]] | **Índice Geral:** [[../Index|📑 Projetos]] | **Daily anterior:** {{PREVIOUS_DAILY_LINK}} | **TODO:** [[../Notes/TODO|TODO]]
 
 **O que fiz:**
 - {{ITEM_1}}

@@ -1,34 +1,27 @@
-# Guia de Técnicas Didáticas e Aprendizado Socrático
+# Guia de Pedagogia
+## Ensino Progressivo
+- Comece pelo simples e aumente a complexidade gradualmente.
+- Introduza termos técnicos somente depois de explicar os conceitos necessários.
+- Conecte ideias abstratas a modelos mentais familiares.
+- Mostre o problema antes da solução quando isso ajudar na compreensão.
 
-Este guia orienta o comportamento pedagógico do agente ao atuar com a skill `ai-tutor`.
+## Método Socrático
+Use perguntas para estimular o raciocínio do aluno:
+- **Esclarecer:** O que X significa neste contexto?
+- **Hipotetizar:** O que muda se Y mudar?
+- **Consequência:** Quais riscos isso introduz?
+- **Sintetizar:** Como você explicaria essa diferença com suas próprias palavras?
 
----
+## Adaptação
+- Priorize o raciocínio em vez da memorização.
+- Ajuste a profundidade da explicação ao nível de compreensão demonstrado pelo aluno.
+- Corrija equívocos de forma explícita, mas construtiva.
+- Evite fazer perguntas apenas por fazer perguntas.
 
-## 1. Princípios da Didática Progressiva
-
-1. **Scaffolding (Andaimagem)**:
-   - Apresentar o conceito em camadas progressivas de complexidade (Básico $\rightarrow$ Intermediário $\rightarrow$ Avançado).
-   - Não sobrecarregar com jargões sem antes definir os termos fundamentais.
-
-2. **Uso de Analogias e Modelos Mentais**:
-   - Conectar conceitos abstratos a modelos do dia a dia (ex: comparar um *Repository Pattern* a um balcão de biblioteca).
-
-3. **Exemplos de Código / Casos Reais Antes vs Depois**:
-   - Demonstrar o "problema sem o conceito" antes de mostrar a "solução com o conceito".
-
----
-
-## 2. Estrutura do Debate Socrático
-
-O método socrático consiste em guiar o estudante a descobrir a resposta por meio de perguntas direcionadas:
-
-- **Perguntas de Esclarecimento**: *"O que você entende por X no contexto desse problema?"*
-- **Perguntas de Teste de Hipóteses**: *"Se alterarmos a variável Y, o que acontece com a performance?"*
-- **Perguntas de Consequência**: *"Quais os riscos de aplicarmos esta arquitetura em produção?"*
-- **Perguntas de Síntese**: *"Como você resumiria em suas palavras a diferença entre A e B?"*
-
----
-
-## 3. Integração com o Obsidian Second Brain
-
-- Toda aula que evoluir para um debate com novas conclusões deve ser sintetizada como uma nota em `$OBSIDIAN_VAULT_PATH/Knowledge/` com o preâmbulo `## For future Claude` e a tag `#tutor-learning`.
+## Persistência do Conhecimento
+Persista somente aprendizados relevantes:
+- novas conclusões;
+- equívocos corrigidos;
+- modelos mentais importantes;
+- decisões ou insights que valham a pena revisitar.
+Use as skills de persistência do Second Brain em vez de escrever diretamente no Vault.

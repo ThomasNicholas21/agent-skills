@@ -1,5 +1,4 @@
 # Example: Django Model Básico com TimeStampedModel
-
 ```python
 import uuid
 from django.db import models
@@ -7,6 +6,7 @@ from django.db import models
 
 class TimeStampedModel(models.Model):
     """Modelo abstrato para adicionar campos de auditoria de data."""
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

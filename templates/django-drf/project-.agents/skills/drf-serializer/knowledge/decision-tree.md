@@ -1,9 +1,5 @@
 # Knowledge: Árvore de Decisão para Seleção de Serializers e Regras Estritas
-
----
-
 ## 1. Árvore de Decisão de Serializers
-
 ```text
 AO CRIAR OU REFATORAR UM SERIALIZER:
 
@@ -25,10 +21,7 @@ AO CRIAR OU REFATORAR UM SERIALIZER:
    └── SIM ──> Usar SerializerMethodField com método get_<field_name>(self, obj).
 ```
 
----
-
 ## 2. Regras Estritas de Proibição
-
 1. **NUNCA** utilize bibliotecas terceiras como `drf-writable-nested`. Escreva gravações aninhadas manualmente.
 2. **NUNCA** utilize `JSONField` para esconder esquemas que deveriam ser declarados com Serializers explícitos.
 3. **NUNCA** utilize `FloatField` para valores monetários. Use `DecimalField(max_digits=10, decimal_places=2)`.

@@ -1,30 +1,39 @@
-# Global Agent Operating Directives (Always On)
-These directives apply universally across all workspaces and sessions.
+# Instruções do Agente
+## Analise Antes do Plano
+Antes de implementar:
+1. Compreenda o requisito e inspecione o código relevante.
+2. Pesquise o repositório antes de criar novos códigos ou abstrações.
+3. Consulte o Second Brain quando arquitetura, regras de negócio ou decisões anteriores puderem ser relevantes.
+4. Identifique restrições, riscos, ambiguidades e abordagens viáveis.
+5. Para decisões arquiteturais ou comportamentais não triviais, discuta as alternativas com o usuário antes de criar o plano.
+6. Não escolha silenciosamente entre soluções materialmente diferentes.
+7. Após a abordagem ser acordada, crie o plano de implementação e execute-o.
+8. Para alterações triviais, não interrompa o usuário desnecessariamente.
 
-## 1. Primary Operating Baseline
-For every task, follow progressive disclosure and minimum context:
-1. **Scope & Identity**: Establish current workspace and repository boundaries via `/project-context`.
-2. **Methodology**: Apply software engineering rigor via `/development-core`.
-3. **Terminal Operations**: Filter all shell output via `/rtk`.
-4. **Memory & History**: Route all persistent memory retrieval and storage via `/second-brain`.
-5. **Specialized Tasks**: Activate `/feature`, `/refactor`, or `/test` according to task objective.
+## Implementação
+- Implemente somente o que for necessário.
+- Reutilize os padrões existentes.
+- Evite abstrações especulativas e refatorações.
+- Não modifique arquivos não relacionados.
+- Pare quando o requisito estiver satisfeito e verificado.
 
-## 2. Mandatory Terminal Efficiency (RTK)
-* **RTK First**: Always use RTK-supported commands (`rtk read`, `rtk grep`, `rtk find`, `rtk git`, `rtk pytest`, `rtk jest`, `rtk ruff`, etc.) for terminal operations to minimize context consumption.
-* **Escalation**: Fallback to native commands ONLY if RTK does not support the action or filtered output loses crucial evidence needed for correctness.
-* **Zero Guessing**: Run `rtk --help` when uncertain of supported syntax.
+## Código
+- Use inglês para código e identificadores.
+- Não adicione docstrings, exceto quando explicitamente solicitado.
+- Não adicione type hints, exceto quando explicitamente solicitado.
+- Siga as convenções existentes no repositório.
+- Nunca ignore exceções silenciosamente.
+- Sempre aplique KISS, YAGNI, DRY, SOLID, Clean Code e boas práticas.
 
-## 3. Persistent Memory Gateway (Obsidian Second Brain)
-* **Routing Gateway**: Route all Vault operations through `/second-brain`. Do not manually duplicate Vault schemas or search logic.
-* **Repo vs Vault Truth**: The current Git repository is the source of truth for **current implementation**. The Obsidian Second Brain vault is the source of truth for **historical context, decisions, and business knowledge**.
-* **Auto-Persist**: Route durable architectural decisions, business rules, and session milestones to `/second-brain` (`/obsidian-save`, `/obsidian-project`).
+## Verificação
+- Inspecione o estado do Git antes e depois das alterações.
+- Verifique se apenas os arquivos pretendidos foram alterados.
+- Execute os testes e ferramentas de linting relevantes.
+- Não declare a implementação como concluída sem realizar as devidas verificações.
 
-## 4. Plan-Before-Execute Gate
-* **Mandatory Plan & Approval**: Always present an explicit Action Plan before editing or implementing code. Show what will be done, explain the rationale (why), and wait for user confirmation before executing changes.
-* **Execution**: Once approved, execute in atomic, minimal vertical slices and verify after each step.
-
-## 5. Precedence & Anti-Drift
-1. **Instruction Priority**: Explicit User Request > Workspace Rules (`.agents/rules/*.md`) > Workspace Skills (`.agents/skills/*`) > Global Rules (`GEMINI.md`).
-2. **Scope Enforcement**: Implement the smallest change that satisfies requirements. Never introduce unrequested refactors, speculative abstractions, or cleanup.
-3. **Verification**: Never declare a task complete without running empirical verification (tests, linting, or runtime checks).
-4. **Explicit Directives & Approval**: Never perform actions, create files, execute refactorings, or modify code outside the explicit scope requested by the user. Always explain what will be done and why, and obtain approval before implementing.
+## Variáveis de Ambiente
+Use estas variáveis para acessar recursos do projeto. Nunca adivinhe ou utilize caminhos fixos.
+- `$OBSIDIAN_VAULT_PATH` — diretório do Second Brain no Obsidian (use somente quando solicitado).
+- `$DAILIES_DIR` — diretório das notas diárias (use somente quando solicitado).
+- `$DOC_DIR` — diretório de documentação do agente (use somente quando solicitado).
+Resolva a variável de ambiente antes de acessar o recurso correspondente.

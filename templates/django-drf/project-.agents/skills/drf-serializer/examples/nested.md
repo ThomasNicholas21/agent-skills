@@ -1,5 +1,4 @@
 # Example: Escrita Aninhada Manual com transaction.atomic() e Proteção de ID
-
 Este exemplo demonstra a implementação manual de `create()` e `update()` em um `ModelSerializer` com coleção aninhada 1:N (`OrderItem`), garantindo que:
 - O fluxo de escrita depende do contexto (criação vs. atualização).
 - Na **criação**, o `id` dos itens aninhados não é necessário nem considerado.
@@ -37,8 +36,7 @@ class OrderNestedSerializer(serializers.ModelSerializer):
             # Ignora qualquer ID enviado no payload de criação e gera novos registros
             order_items = [
                 OrderItem(
-                    order=order,
-                    **{k: v for k, v in item_data.items() if k != "id"}
+                    order=order, **{k: v for k, v in item_data.items() if k != "id"}
                 )
                 for item_data in items_data
             ]

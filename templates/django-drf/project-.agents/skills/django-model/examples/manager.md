@@ -1,32 +1,29 @@
-# Example: Django Model Completo com Custom Manager e QuerySet
+# Example: Django Model com Custom QuerySet e Manager Encadeável
+
+Demonstração do padrão de duas camadas (`QuerySet` + `Manager`):
 
 ```python
-import uuid
 from decimal import Decimal
+import uuid
 from django.db import models
-from django.db.models import Sum
-
-
-class TimeStampedModel(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        abstract = True
 
 
 class OrderQuerySet(models.QuerySet):
-    def active(self) -> "OrderQuerySet":
+    """Encapsula filtros e agregações encadeáveis."""
+
+    def active(self):
         return self.filter(is_active=True)
 
-    def completed(self) -> "OrderQuerySet":
+    def completed(self):
         return self.filter(status="COMPLETED")
 
-    def total_revenue(self) -> Decimal:
-        return self.aggregate(total=Sum("total_amount"))["total"] or Decimal("0.00")
+    def high_value(self, threshold: Decimal = Decimal("1000.00")):
+        return self.filter(total_amount__gte=threshold)
 
 
 class OrderManager(models.Manager):
+    """Expõe os métodos do QuerySet e implementa criação customizada."""
+
     def get_queryset(self) -> OrderQuerySet:
         return OrderQuerySet(self.model, using=self._db)
 
@@ -36,37 +33,26 @@ class OrderManager(models.Manager):
     def completed(self) -> OrderQuerySet:
         return self.get_queryset().completed()
 
-    def total_revenue(self) -> Decimal:
-        return self.get_queryset().total_revenue()
+    def high_value(self, threshold: Decimal = Decimal("1000.00")) -> OrderQuerySet:
+        return self.get_queryset().high_value(threshold)
 
 
-class Order(TimeStampedModel):
-    # 1. Campos
+class Order(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="orders")
-    code = models.CharField("Code", max_length=50, unique=True)
-    status = models.CharField("Status", max_length=20, db_index=True, default="PENDING")
-    total_amount = models.DecimalField("Total Amount", max_digits=10, decimal_places=2, default=Decimal("0.00"))
-    is_active = models.BooleanField("Is Active", default=True, db_index=True)
+    code = models.CharField(max_length=50, unique=True)
+    status = models.CharField(max_length=20, default="PENDING")
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-    # 2. Manager
     objects = OrderManager()
 
-    # 3. Meta (Sem ordering padrão!)
     class Meta:
         indexes = [
             models.Index(fields=["status", "created_at"]),
         ]
-        constraints = [
-            models.UniqueConstraint(fields=["user", "code"], name="unique_user_order_code")
-        ]
 
-    # 4. Métodos de Negócio
-    def mark_as_completed(self) -> None:
-        self.status = "COMPLETED"
-        self.save(update_fields=["status", "updated_at"])
-
-    # 5. __str__ (OBRIGATORIAMENTE o último método)
     def __str__(self) -> str:
-        return f"Order #{self.code} ({self.status})"
+        return f"Order #{self.code}"
 ```

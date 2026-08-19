@@ -1,5 +1,4 @@
 # Example: Rotas Aninhadas com a Biblioteca drf-nested-routers
-
 Este exemplo demonstra o uso opcional da biblioteca `drf-nested-routers` para rotas aninhadas baseadas em routers.
 
 ```python
@@ -16,12 +15,10 @@ router.register("clients", ClientViewSet, basename="client")
 client_router = nested_routers.NestedSimpleRouter(
     router,
     r"clients",
-    lookup="client"  # Gera o parametro self.kwargs["client_pk"] na ViewSet
+    lookup="client",  # Gera o parametro self.kwargs["client_pk"] na ViewSet
 )
 client_router.register(
-    r"calculations",
-    CalculationViewSet,
-    basename="client-calculations"
+    r"calculations", CalculationViewSet, basename="client-calculations"
 )
 
 urlpatterns = [

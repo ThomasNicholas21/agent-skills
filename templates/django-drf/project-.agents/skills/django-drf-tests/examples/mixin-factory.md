@@ -1,5 +1,4 @@
 # Example: Model Factory Mixin Reutilizável com **kwargs
-
 ```python
 # apps/orders/tests/mixins.py
 from decimal import Decimal

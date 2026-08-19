@@ -1,5 +1,4 @@
 # Example: IDs Semânticos com NewType e Enums Estáticos com Literal
-
 ```python
 from typing import NewType, Literal
 from decimal import Decimal
@@ -13,9 +12,7 @@ type OrderStatus = Literal["draft", "pending", "paid", "cancelled"]
 
 
 def update_order_status(
-    user_id: UserId,
-    order_id: OrderId,
-    new_status: OrderStatus
+    user_id: UserId, order_id: OrderId, new_status: OrderStatus
 ) -> None:
     """Atualiza o status de um pedido pertencente a um usuario especifico."""
     ...

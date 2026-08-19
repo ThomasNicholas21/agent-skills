@@ -1,7 +1,4 @@
 # Knowledge: Scoping e Otimização de QuerySet em ViewSets
-
----
-
 ## 1. Scoping por Usuário / Multi-tenancy
 Nunca exponha `queryset = Order.objects.all()` estático na classe quando a API for restrita ao usuário autenticado.
 
@@ -14,8 +11,6 @@ def get_queryset(self):
         return Order.objects.all()
     return Order.objects.filter(user=user)
 ```
-
----
 
 ## 2. Eliminação de N+1 Queries
 Sempre inclua junções antecipadas no `get_queryset()`:

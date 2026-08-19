@@ -1,51 +1,71 @@
 ---
 name: create-test-plan-workflow
 description: >-
-  Workflow para elaboração de plano de testes automatizados abrangente em projetos Django/DRF.
-  Mapeia lacunas de cobertura por camada (Models, Serializers, ViewSets, Services), alinha prioridades com
-  o usuário e gera implementation_plan.md com snippets de teste (Model Factory Mixins, SimpleTestCase, TestCase, APITestCase).
-  Use sempre que o usuário invocar /create-test-plan-workflow ou pedir plano de testes.
+  Analisa cobertura e riscos de teste, identifica lacunas de regressão, alinha prioridades com o usuário,
+  e gera um plano de implementação apenas após aprovação explícita.
 ---
 
-# Workflow: Plano de Testes Abrangente (create-test-plan-workflow)
+# Workflow de Planejamento de Testes
+Utilize para analisar testes existentes e planejar cobertura de testes automatizados.
 
-Este workflow orienta a análise arquitetural completa de um repositório Django/DRF para elaborar um plano de testes automatizados cobrindo todas as camadas do projeto.
+## 1. Gate — Analisar Antes de Planejar
+Não modifique testes nem crie `implementation_plan.md` antes de:
+1. Analisar a suíte de testes existente.
+2. Mapear o comportamento relevante da aplicação.
+3. Identificar lacunas de cobertura e riscos de regressão.
+4. Discutir prioridades com o usuário.
+5. Receber aprovação explícita.
 
----
+## 2. Analisar
+Inspecione o repositório utilizando RTK:
+- Executor de testes e configurações (`pytest` vs `unittest` do Django).
+- Estrutura de diretórios de testes, fixtures, factories e mixins existentes.
+- Models, QuerySets, Serializers, Views, ViewSets, Services e integrações.
+- Execute testes existentes relevantes para identificar o estado atual.
+**Não modifique testes durante a análise.**
 
-## 1. Varredura Completa do Repositório (Project Exploration)
+### Análise de Cobertura e Riscos
+Identifique para cada comportamento:
+- Cobertura existente vs lacunas.
+- Testes frágeis ou redundantes.
+- Cenários críticos de negócio sem proteção de regressão.
+- Casos de borda, transações, concorrência e queries N+1.
+Priorize **comportamento e risco**, não quantidade de testes.
 
-1. **Invoque a skill `django-drf-tests`**.
-2. **Inspeção de Módulos**: Mapeie todas as aplicações e camadas do repositório utilizando comandos RTK:
-   - Models, Custom QuerySets e Managers (`models.py`, `managers.py`).
-   - Serializers e validadores (`serializers.py`).
-   - Views, ViewSets e Consumers (`views.py`, `viewsets.py`, `consumers.py`).
-   - URLs e roteamento (`urls.py`, `nested_urls.py`).
-   - Serviços e regras de negócio (`services.py`).
-3. **Detecção do Framework de Testes**: Identifique se o projeto utiliza Django `unittest` nativo ou `pytest` (`pytest.ini`, `conftest.py`, `pyproject.toml`).
+### Apresentação da Análise
+Apresente:
+- **Infraestrutura de Teste**: Runner e convenções detectadas.
+- **Cobertura Atual**: O que já está testado.
+- **Lacunas**: Cenários ausentes ou insuficientes.
+- **Riscos**: Comportamentos mais propensos a regressão.
+- **Prioridades**: 1. Crítico 2. Importante 3. Opcional.
+- **Recomendação**: Estratégia proposta e justificativa.
 
----
+Em seguida, discuta com o usuário.
 
-## 2. Análise de Lacunas e Cobertura por Camada
+## 3. Debate & Gate de Aprovação
+Use o debate para confirmar os cenários mais críticos, definir a profundidade dos testes e evitar testes de detalhes óbvios de implementação.
 
-Mapeie as lacunas de teste identificadas nas seguintes categorias:
-- **Models & QuerySets**: Constraints únicas, relacionamentos, managers customizados.
-- **Serializers**: Validações de 3 níveis, campos obrigatórios, escrita aninhada manual.
-- **ViewSets & Endpoints**: Status HTTP (`200`, `201`, `400`, `401`, `403`, `404`), permissões, filtros, `assertNumQueries`.
-- **Services & Regras de Negócio**: Regras de cálculo, orquestração e transações (`transaction.atomic()`).
+Quando alinhado, pergunte:
+> Escopo de testes e prioridades confirmados. Posso gerar o plano de implementação?
 
----
+Prossiga somente após aprovação explícita.
 
-## 3. Debate e Alinhamento com o Usuário
+## 4. Plano de Implementação
+Após aprovação, crie `implementation_plan.md` contendo:
+- **Objetivo**: Comportamentos que a suíte deve proteger.
+- **Cobertura Atual & Lacunas**: Cenários existentes e faltantes.
+- **Estratégia**: Nível adequado para cada cenário (unit, model, service, API, integração).
+- **Casos de Teste**: Cenário, setup, ação, resultado esperado e prioridade (caminho feliz, falhas de validação, autenticação/permissão, 404, conflitos, edge cases, contagem de queries).
+- **Massa de Dados**: Reutilização de factories/mixins existentes (`django-drf-tests`).
+- **Verificação**: Comandos exatos de execução e critérios de sucesso.
 
-1. Apresente um resumo executivo não verboso com as principais lacunas identificadas por camada.
-2. Debata as prioridades de teste com o usuário.
-3. Pergunte explicitamente ao usuário se deve gerar o arquivo de plano de implementação (`implementation_plan.md`).
-
----
-
-## 4. Geração do Plano de Implementação (`implementation_plan.md`)
-
-Após a confirmação do usuário, crie o plano de testes contendo:
-- **Justificativa Técnica (*why*)**: Explicação curta do motivo de cada teste.
-- **Código de Referência Específico**: Snippets de código prontos utilizando `SimpleTestCase`, `TestCase`, `APITestCase` ou `pytest`, com `force_authenticate` e `Model Factory Mixins` (`create_<model>(**kwargs)`).
+## 5. Regras de Teste & Scope Lock
+- `SimpleTestCase` para testes sem acesso ao banco de dados.
+- `TestCase` para testes com banco de dados.
+- `APITestCase` para testes de API/endpoints DRF.
+- `pytest` / `pytest-django` apenas quando já configurado no repositório.
+- Use `force_authenticate` para autenticação em testes de API.
+- Isole serviços externos com mocks.
+- Priorize comportamento sobre detalhes internos de implementação e evite testes redundantes.
+- Crie um plano detalhado e com código que planeja implementar

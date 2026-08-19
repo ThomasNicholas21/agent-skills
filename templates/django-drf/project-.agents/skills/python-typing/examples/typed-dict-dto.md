@@ -1,5 +1,4 @@
 # Example: Payloads de DTO e Configuração com TypedDict
-
 ```python
 from decimal import Decimal
 from typing import TypedDict, NotRequired, ReadOnly

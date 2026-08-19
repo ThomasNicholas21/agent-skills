@@ -1,5 +1,4 @@
 # Example: GenericViewSet com Composição Fina de Mixins
-
 ```python
 from rest_framework import viewsets, mixins, permissions
 from apps.reports.models import AuditLog
@@ -15,6 +14,7 @@ class AuditLogViewSet(
     ViewSet que habilita estritamente a listagem (list) e a criacao (create),
     sem expor retrieve, update ou destroy.
     """
+
     queryset = AuditLog.objects.all()
     serializer_class = AuditLogSerializer
     permission_classes = [permissions.IsAuthenticated]

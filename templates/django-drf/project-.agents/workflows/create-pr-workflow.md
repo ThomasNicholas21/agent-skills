@@ -1,53 +1,47 @@
 ---
 name: create-pr-workflow
 description: >-
-  Workflow para geração automatizada de descrição de Pull Request com base no histórico Git,
-  rotas/endpoints mapeados e respostas OpenAPI/Swagger, formatado estritamente conforme o gabarito
-  pull_request_template.md com limite de 1500 caracteres. Use sempre que o usuário invocar /create-pr-workflow ou /create-pr.
+  Gera descrição concisa de Pull Request a partir de alterações do Git, endpoints afetados,
+  regras de validação, testes e documentação OpenAPI. Mantém a descrição estritamente abaixo de 1500 caracteres.
 ---
 
-# Workflow: Geração de Pull Request (create-pr-workflow)
+# Workflow de Criação de PR
+Utilize para `/create-pr-workflow` ou `/create-pr`.
 
-Este workflow analisa o histórico de alterações no Git, mapeia novos e modificados endpoints, extrai as respostas de erro do Swagger OpenAPI e formata a descrição do PR baseada no gabarito `.github/pull_request_template.md`.
+## 1. Analisar Alterações
+Inspecione o estado real do repositório antes de escrever o PR:
+- Execute `rtk git status --short`.
+- Execute `rtk git diff --stat`.
+- Inspecione o diff relevante.
+- Execute `rtk git log -n 5 --oneline` para contexto.
+- Leia `.github/pull_request_template.md` (se existir).
+Não deduza alterações da memória.
 
----
+## 2. Mapear Endpoints
+Identifique **todos os endpoints criados ou modificados**:
+- Método HTTP e rota completa (`METHOD /rota/ - Objetivo`).
+- Objetivo e regras de validação/negócio relevantes.
+- Autenticação, permissões e códigos de resposta esperados.
+- Testes relacionados.
+Não liste endpoints não relacionados nem invente rotas.
 
-## 1. Varredura do Git e Mapeamento de Alterações
+## 3. OpenAPI / Swagger & Testes
+- Inspecione decorators e schemas OpenAPI para identificar contratos e validações.
+- Mencione validações importantes no PR e aponte para o Swagger/OpenAPI para o contrato completo.
+- Se testes foram executados, reporte o comando e o resultado real (nunca afirme que passaram sem executar).
 
-1. **Inspeção de Status e Diffs**:
-   - Execute `rtk git status --short` e `rtk git diff --stat` para listar os arquivos modificados.
-   - Execute `rtk git log -n 5 --oneline` para contextualizar as últimas alterações.
-2. **Mapeamento de Endpoints e Rotas**:
-   - Identifique novos endpoints criados e endpoints existentes modificados (`urls.py`, `views.py`, `viewsets.py`, `serializers.py`).
-   - Mapeie o uso do Swagger OpenAPI (`schemas.py`, `@extend_schema_view`, `@extend_schema`) para identificar contratos de resposta e códigos de erro (`400`, `401`, `403`, `404`, `409`).
-3. **Mapeamento de Testes**:
-   - Inspecione a suíte de testes executada (`apps/<app>/tests/`).
+## 4. Gerar Descrição do PR
+Preserve a estrutura de `.github/pull_request_template.md` quando existir.
+A descrição final DEVE:
+- Ter **estritamente menos de 1500 caracteres**.
+- Listar **todos os endpoints afetados** no formato `METHOD /rota/ - Objetivo`.
+- Mencionar validações e regras de negócio essenciais.
+- Resumir testes relevantes e resultados reais.
+- Priorizar informações de alto sinal e evitar detalhes óbvios de implementação.
 
----
-
-## 2. Leitura do Gabarito de PR (`pull_request_template.md`)
-
-1. Leia o gabarito `.github/pull_request_template.md` do repositório (ex: `z:/home/thomas/projects/work/revisa-mais-backend/.github/pull_request_template.md`).
-2. Mantenha obrigatoriamente a estrutura das 4 seções do gabarito:
-   - `## [Contexto]`
-   - `## [Descrição]`
-   - `## [Tipo]`
-   - `## [Testes]`
-
----
-
-## 3. Regras de Formatação e Limite de Caracteres
-
-- **Limite de Tamanho**: Toda a descrição do PR DEVE ser concisa, de alto sinal e mantida estritamente **abaixo de 1500 caracteres**.
-- **Seção `## [Descrição]`**:
-  - Liste cada endpoint criado ou modificado no formato: `VERBO /rota/ - Usabilidade/Objetivo`.
-  - Faça referência ao Swagger OpenAPI para detalhamento de respostas de erro (ex: *"Respostas e validações de erro (400, 401, 403, 404) estão documentadas via Swagger OpenAPI/Spectacular"*).
-- **Seção `## [Tipo]`**: Marque com `[x]` o tipo da alteração (`Bug fix`, `New feature`, `Refactoring`, `Documentação`).
-- **Seção `## [Testes]`**: Resuma brevemente os comandos de testes executados (`rtk pytest`) e resultados obtidos.
-
----
-
-## 4. Disponibilização ao Usuário
-
-1. Apresente o texto final do PR formatado na resposta para o usuário.
-2. Salve o conteúdo gerado no arquivo `scratch/pr_description.md` para facilitar o uso no GitHub.
+## 5. Validação
+Antes de apresentar ao usuário:
+1. Conte os caracteres finais.
+2. Se `>= 1500`, resuma e conte novamente.
+3. Garanta que a descrição final tenha `< 1500 caracteres`.
+4. Apresente o resultado final no chat.

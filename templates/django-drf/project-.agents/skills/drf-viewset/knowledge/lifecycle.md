@@ -1,16 +1,9 @@
 # Knowledge: Ciclo de Vida do ViewSet, self.action e Atributos de Instância
-
----
-
 ## 1. Atributo `self.action`
-
 Durante o dispatch da requisição em um `ViewSet`, o DRF identifica qual ação está sendo executada e a disponibiliza no atributo `self.action`.
-
 Valores comuns de `self.action`:
 - `'list'`, `'create'`, `'retrieve'`, `'update'`, `'partial_update'`, `'destroy'`
 - Nome do método decorado com `@action` (ex: `'set_password'`, `'recent_users'`)
-
----
 
 ## 2. Onde `self.action` está Disponível (Disponibilidade no Ciclo de Vida)
 
@@ -25,10 +18,7 @@ Valores comuns de `self.action`:
 | `get_authenticators()` | **NÃO** | Atributo indisponível. Não depender de `self.action`. |
 | `get_content_negotiator()` | **NÃO** | Atributo indisponível. Não depender de `self.action`. |
 
----
-
 ## 3. Atributos de Instância Adicionais
-
 - `self.detail`: Booleano que indica se a ação atual opera sobre um objeto individual (`detail=True`) ou sobre uma coleção (`detail=False`).
 - `self.basename`: String utilizada pelo `Router` para gerar o prefixo do nome das URLs (ex: `'user'`).
 - `self.suffix`: Metadata descritivo sobre a ViewSet.

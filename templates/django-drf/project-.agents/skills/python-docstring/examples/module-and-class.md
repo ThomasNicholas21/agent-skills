@@ -1,5 +1,4 @@
 # Example: Docstrings de Módulo e Classe
-
 ```python
 """
 Payment processing domain services and gateway integration utilities.

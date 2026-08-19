@@ -1,46 +1,45 @@
 ---
 name: create-project-execution-rule-workflow
 description: >-
-  Workflow para inspeção e detecção de comandos de execução do projeto (venv, docker, migrações, servidores,
-  health checks), debate com o usuário e geração da regra .agents/rules/project-execution.md.
-  Use sempre que o usuário invocar /create-project-execution-rule-workflow ou solicitar configuração de execução.
+  Detecta comandos de execução do projeto, valida com o usuário e cria .agents/rules/project-execution.md.
+  Use para /create-project-execution-rule-workflow ou ao configurar comandos de runtime do projeto.
 ---
 
-# Workflow: Criação e Customização da Regra de Execução (create-project-execution-rule-workflow)
+# Workflow de Execução do Projeto
+Utilize para descobrir e documentar os comandos necessários para rodar o projeto localmente.
 
-Este workflow orienta a inspeção de um repositório, o alinhamento de comandos com o usuário e a geração/customização da regra `.agent/rules/project-execution.md` específica do projeto.
+## 1. Analisar
+Inspecione o repositório antes de propor comandos (usando RTK):
+- Gerenciador de pacotes e ambiente (`uv`, `poetry`, `pip`, `.venv`).
+- Entrypoints do projeto (`manage.py`, `wsgi.py`, `asgi.py`).
+- Configurações de runtime (`.env.example`, `pyproject.toml`, `docker-compose.yml`, `Dockerfile`, `Makefile`).
+- Infraestrutura (PostgreSQL, Redis, RabbitMQ, etc.).
+- Workers e agendadores (Celery, etc.).
+- Endpoints de health check e smoke tests.
 
----
+Obtenha os comandos a partir do repositório. Não deduza comandos apenas por serem comuns no Django.
+**Não modifique arquivos durante a análise.**
 
-## 1. Inspeção e Detecção do Repositório
+## 2. Validar com o Usuário
+Apresente o fluxo detectado:
+- **Ambiente**: Gerenciador de pacotes, virtualenv, variáveis necessárias.
+- **Infraestrutura**: Docker, banco de dados, cache, mensageria.
+- **Aplicação**: Instalação de dependências, migrations, servidor de desenvolvimento/ASGI/WSGI.
+- **Workers**: Comandos de background workers (se houver).
+- **Verificação**: Comandos de health check e testes rápidos.
 
-1. **Detectar Gerenciador de Pacotes e Venv**:
-   - Inspecione a presença de `uv.lock`, `poetry.lock`, `Pipfile`, `pyproject.toml` ou `requirements.txt` usando `rtk find`.
-2. **Detectar Serviços e Contêineres**:
-   - Inspecione `docker-compose.yml` ou `Dockerfile` para identificar dependências de banco de dados (PostgreSQL, MySQL), cache (Redis) e brokers (RabbitMQ).
-3. **Detectar Módulo de Configuração e Entrypoints**:
-   - Localize `manage.py`, `wsgi.py`, `asgi.py` e o diretório de configurações (`config/settings/` ou `settings.py`).
-4. **Detectar Endpoints de Health Check**:
-   - Busque rotas de status/saúde (`/health/`, `/ping/`, `/api/v1/status/`) no `urls.py`.
+Peça confirmação ao usuário antes de gerar o arquivo de regra.
 
----
+## 3. Gerar a Regra
+Após confirmação, crie ou atualize `.agents/rules/project-execution.md` contendo apenas comandos exatos e específicos do projeto:
+- Comandos de ambiente e sincronização de dependências.
+- Comandos de inicialização de infraestrutura e serviços.
+- Comandos de migração e banco de dados.
+- Comandos para iniciar a aplicação e workers.
+- Comandos de verificação e validação de runtime.
 
-## 2. Debate e Alinhamento com o Usuário
-
-1. Apresente ao usuário os comandos de execução detectados:
-   - Comando de ambiente e virtualenv (`uv run`, `poetry run`, `.venv`).
-   - Comando de migração de banco (`manage.py migrate`).
-   - Comando do servidor HTTP (`manage.py runserver 0.0.0.0:8000`).
-   - Comando de contêineres Docker (`docker compose up -d`).
-   - Comandos de workers/serviços adicionais (Celery, Daphne, Redis).
-2. Debata e confirme com o usuário as portas, variáveis de ambiente exigidas (`.env`) e particularidades locais.
-
----
-
-## 3. Geração da Regra `.agent/rules/project-execution.md`
-
-Após a aprovação do usuário, crie ou atualize a regra `.agent/rules/project-execution.md` no projeto contendo:
-- **Resolução de Ambiente**: Comandos exatos com o gerenciador de pacotes do projeto.
-- **Checagem e Aplicação de Migrações**: Instruções passo a passo.
-- **Subida de Servidores e Workers**: Comandos de dev server, Celery e Docker Compose.
-- **Validação de Runtime e Smoke Test**: Endpoints de health check e comandos de inspeção sem polling.
+## 4. Segurança & Escopo
+- Nunca invente comandos e nunca exponha segredos de `.env`.
+- Não assuma Docker ou Celery se o projeto não utilizar.
+- Nunca execute comandos destrutivos sem aprovação explícita.
+- Esta regra documenta **apenas execução do projeto** (não inclua regras de estilo, arquitetura ou testes gerais).

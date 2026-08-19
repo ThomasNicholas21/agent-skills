@@ -1,86 +1,65 @@
 ---
 name: create-refactor-plan-workflow
 description: >-
-  Workflow determinístico para planejamento de refatoração de código (Analyze-Before-Plan).
-  Mapeia o blast radius completo, avalia a suíte de testes existente, conduz debate de riscos e abordagem
-  com o usuário, e gera implementation_plan.md minimalista com testes de regressão sob aprovação explícita.
-  Use sempre que o usuário invocar /create-refactor-plan-workflow ou solicitar refatoração estrutural.
+  Analisa o impacto de refatorações de código, valida escopo e riscos com o usuário,
+  e gera um plano de implementação somente após aprovação explícita.
 ---
 
-# Workflow: Plano de Refatoração – Analyze Before Plan (create-refactor-plan-workflow)
+# Workflow de Refatoração
+Utilize para refatorações estruturais ou não triviais.
 
-Este workflow segue o padrão **Analyze-Before-Plan**: o agente investiga o impacto, debate com o usuário e só gera o plano de refatoração sob comando explícito.
+## 1. Gate — Analisar Antes de Planejar
+Não modifique código nem crie `implementation_plan.md` antes de:
+1. Analisar a implementação atual.
+2. Mapear o impacto e dependências.
+3. Identificar riscos e restrições.
+4. Discutir a abordagem com o usuário.
+5. Receber aprovação explícita.
 
-> ⛔ **REGRA INVIOLÁVEL**: O agente é **PROIBIDO** de gerar `implementation_plan.md` em qualquer momento deste workflow sem que o usuário peça explicitamente (ex: "gere o plano", "pode criar", "monta o plano"). A fase de debate DEVE ocorrer primeiro.
+## 2. Analisar
+Inspecione o repositório utilizando RTK:
+- Alvo exato da refatoração.
+- Chamadores diretos e indiretos (`rtk grep`, `rtk find`).
+- Models, QuerySets, Managers, Serializers, Views, ViewSets, Services, URLs e Schemas relacionados.
+- Testes existentes e contratos de API afetados.
+- Consulte o Second Brain caso a refatoração envolva decisões arquiteturais prévias.
+**Não modifique código durante a análise.**
 
----
+### Apresentação da Análise
+Apresente:
+- **Alvo**: O que está sendo refatorado.
+- **Design Atual**: Como funciona hoje.
+- **Impacto**: Arquivos, chamadores e contratos afetados.
+- **Testes**: Cobertura existente e resultados relevantes.
+- **Riscos**: Riscos de compatibilidade, performance ou comportamento.
+- **Opções**: 1. Refatoração mínima 2. Abordagem alternativa (se houver).
+- **Recomendação**: Abordagem recomendada e justificativa.
 
-## Fase A – Investigação de Impacto
+Em seguida, discuta com o usuário.
 
-Objetivo: Mapear o blast radius completo antes de qualquer discussão.
+## 3. Debate & Gate de Aprovação
+Use o debate para esclarecer o objetivo, eliminar escopo desnecessário, definir garantias de compatibilidade e confirmar a cobertura de testes de regressão.
 
-1. **Identificação do Alvo**: Defina exatamente a função, classe, modelo ou camada a ser refatorada.
-2. **Varredura de Blast Radius**: Utilize `rtk grep` e `rtk find` para localizar todos os locais do repositório afetados pela alteração:
-   - Impacto em Models, QuerySets e Managers.
-   - Impacto em Serializers e regras de validação.
-   - Impacto em ViewSets, Views e decoradores OpenAPI (`schemas.py`).
-   - Impacto em Services, regras de negócio e integrações.
-   - Impacto em URLs e rotas atreladas.
-   - Impacto em testes existentes.
-3. **Avaliação da Suíte de Testes Existente**: Execute os testes existentes via `rtk pytest`. Se a cobertura do código a ser refatorado for insuficiente, **sinalize ao usuário** que testes de regressão serão necessários ANTES de refatorar (skill `django-drf-tests`).
-4. **Consulta ao Second Brain**: Execute `/obsidian-find <termo>` para resgatar ADRs e decisões históricas relacionadas ao código alvo.
+Quando alinhado, pergunte:
+> Escopo e abordagem de refatoração confirmados. Posso gerar o plano de implementação?
 
----
+Prossiga somente após aprovação explícita.
 
-## Fase B – Debate Híbrido com o Usuário
+## 4. Plano de Implementação
+Após aprovação, crie `implementation_plan.md` contendo:
+- **Objetivo**: O que a refatoração muda e o porquê.
+- **Estado Atual**: Estrutura e comportamento existentes.
+- **Escopo**: Arquivos/componentes autorizados a mudar.
+- **Etapas**: Passos ordenados de implementação.
+- **Compatibilidade**: Contratos e comportamentos que devem permanecer inalterados.
+- **Testes**: Testes de regressão necessários antes ou durante a refatoração (`django-drf-tests`).
+- **Verificação**: Comandos exatos de verificação (incluindo contagem de queries se sensível a performance).
+- **Riscos**: Riscos e estratégias de mitigação.
 
-Objetivo: Alinhar escopo, riscos e abordagem da refatoração.
-
-> ⛔ **GATE**: O agente NÃO gera nenhum plano nesta fase. Apenas faz perguntas e debate.
-
-### B.1 – Primeira Rodada: Perguntas Estruturadas
-
-Apresente ao usuário o mapa de impacto e uma lista organizada de perguntas:
-
-- **Mapa de Impacto**: Quais arquivos e contratos serão afetados? Quantos locais de chamada existem?
-- **Motivação**: Qual o objetivo da refatoração? Performance? Legibilidade? Remoção de tech debt? Mudança de contrato?
-- **Compatibilidade**: A refatoração pode quebrar contratos públicos (APIs, interfaces)? Precisa de migração de dados?
-- **Escopo**: Refatoração cirúrgica (mínima) ou estrutural (altera arquitetura)?
-- **Testes**: A cobertura de testes atual é suficiente? Precisa de testes de regressão antes de refatorar?
-- **Riscos**: Quais são os cenários de rollback se a refatoração causar problemas?
-
-### B.2 – Aprofundamento Socrático
-
-Após as respostas da primeira rodada:
-
-1. Aprofunde **um ponto por vez**, fazendo perguntas de follow-up nos temas ambíguos.
-2. Proponha alternativas de refatoração quando houver mais de uma abordagem (ex: "podemos extrair um mixin ou criar um service — qual caminho prefere?").
-3. Apresente o **antes vs depois** conceitual dos trechos mais críticos.
-4. Continue até que o escopo e a abordagem estejam totalmente convergidos.
-
-### B.3 – Confirmação de Prontidão
-
-Quando o debate convergir, pergunte ao usuário:
-
-> "O escopo e a abordagem da refatoração estão alinhados. Deseja que eu gere o plano de implementação?"
-
-**Só avance para a Fase C com resposta afirmativa explícita.**
-
----
-
-## Fase C – Geração do Plano de Implementação
-
-Objetivo: Gerar `implementation_plan.md` somente sob comando explícito do usuário.
-
-### Formato do `implementation_plan.md`
-
-O documento de plano gerado DEVE conter:
-
-- **Resumo do Impacto**: Lista de componentes afetados e garantias de preservação de contrato.
-- **Passo a Passo de Refatoração**:
-  - Modificações pontuais em Models / Managers (skill `django-model`).
-  - Otimizações no Serializer ou ViewSet (skills `drf-serializer` e `drf-viewset`).
-  - Atualização de Schemas ou URLs (skills `drf-schema` e `drf-django-url`).
-- **Justificativa (*why*) e Código de Referência**: Snippets objetivos demonstrando o código **antes** e **depois** da refatoração.
-- **Testes de Regressão Necessários**: Se a cobertura era insuficiente, inclua os testes que devem ser criados antes (skill `django-drf-tests`).
-- **Plano de Verificação de Regressão**: Comandos de testes automatizados e asserções de queries (`assertNumQueries`).
+## 5. Scope Lock & Regras
+- Altere apenas o escopo aprovado.
+- Preserve o comportamento existente, salvo acordo explícito.
+- Evite limpezas e refatorações oportunistas fora do escopo.
+- Reutilize padrões existentes do projeto e prefira a menor alteração viável.
+- Não introduza novas abstrações a menos que justificadas pela refatoração.
+- Crie um plano detalhado e com código que planeja implementar

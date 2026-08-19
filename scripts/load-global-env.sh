@@ -1,67 +1,92 @@
 #!/usr/bin/env bash
+set -euo pipefail
+
 # ==============================================================================
-# Script para carregar variáveis do .env como variáveis globais do terminal (~/.bashrc)
-# Regra: NÃO sobrescreve variáveis existentes. Informa ao usuário como proceder.
+# Synchronize .env variables into the user's shell configuration.
+#
+# Only the managed block is modified. Everything else in ~/.bashrc is preserved.
 # ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 ENV_FILE="${1:-$ROOT_DIR/.env}"
 
-TARGET_RC="$HOME/.bashrc"
-if [ -n "$ZSH_VERSION" ] || [ -f "$HOME/.zshrc" ]; then
-  TARGET_RC="$HOME/.zshrc"
+case "${SHELL:-}" in
+    */zsh)
+        TARGET_RC="$HOME/.zshrc"
+        ;;
+    *)
+        TARGET_RC="$HOME/.bashrc"
+        ;;
+esac
+
+BLOCK_START="# >>> agent-skills env >>>"
+BLOCK_END="# <<< agent-skills env <<<"
+
+if [[ ! -f "$ENV_FILE" ]]; then
+    echo "Erro: arquivo .env não encontrado: $ENV_FILE"
+    exit 1
 fi
 
-if [ ! -f "$ENV_FILE" ]; then
-  echo "Erro: Arquivo .env não encontrado em: $ENV_FILE"
-  exit 1
-fi
+touch "$TARGET_RC"
 
-echo "=========================================="
-echo "Carregando Variáveis Globais de Ambiente"
-echo "Arquivo de origem: $ENV_FILE"
-echo "Arquivo de destino: $TARGET_RC"
-echo "=========================================="
+TMP_FILE="$(mktemp)"
+trap 'rm -f "$TMP_FILE"' EXIT
 
-created_count=0
-existing_count=0
+{
+    echo "$BLOCK_START"
 
-while IFS= read -r line || [ -n "$line" ]; do
-  trimmed_line=$(echo "$line" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        # Remove espaços externos.
+        line="${line#"${line%%[![:space:]]*}"}"
+        line="${line%"${line##*[![:space:]]}"}"
 
-  if [[ -z "$trimmed_line" || "$trimmed_line" =~ ^# ]]; then
-    continue
-  fi
+        # Ignora linhas vazias e comentários.
+        [[ -z "$line" || "$line" == \#* ]] && continue
 
-  if [[ "$trimmed_line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
-    key="${BASH_REMATCH[1]}"
-    value="${BASH_REMATCH[2]}"
+        # Aceita apenas KEY=value.
+        if [[ "$line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
+            key="${BASH_REMATCH[1]}"
+            value="${BASH_REMATCH[2]}"
 
-    value=$(echo "$value" | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
+            # Remove aspas externas.
+            if [[ "$value" =~ ^\".*\"$ ]]; then
+                value="${value:1:-1}"
+            elif [[ "$value" =~ ^\'.*\'$ ]]; then
+                value="${value:1:-1}"
+            fi
 
-    current_env_val="${!key}"
-    grep_rc=$(grep -E "^export ${key}=" "$TARGET_RC" 2>/dev/null)
+            printf 'export %s=%q\n' "$key" "$value"
+        fi
+    done < "$ENV_FILE"
 
-    if [ -n "$current_env_val" ] || [ -n "$grep_rc" ]; then
-      echo "[AVISO] A variável '$key' já existe e NÃO foi sobrescrita."
-      echo "        Valor atual no ambiente: ${current_env_val:-$grep_rc}"
-      echo "        Para atualizar esta variável, remova-a (ex: unset $key e edite $TARGET_RC) e rode o script novamente."
-      echo "------------------------------------------"
-      existing_count=$((existing_count + 1))
-    else
-      export "$key=$value"
-      echo "export $key=\"$value\"" >> "$TARGET_RC"
-      echo "[SUCESSO] Variável '$key' criada com sucesso!"
-      echo "          Adicionada a: $TARGET_RC"
-      echo "          Valor: $value"
-      echo "------------------------------------------"
-      created_count=$((created_count + 1))
-    fi
-  fi
-done < "$ENV_FILE"
+    echo "$BLOCK_END"
+} > "$TMP_FILE"
 
-echo "=========================================="
-echo "Resumo: $created_count criadas | $existing_count já existentes"
-echo "Para carregar no terminal ativo agora, rode: source $TARGET_RC"
-echo "=========================================="
+# Remove o bloco antigo e insere o novo.
+awk -v start="$BLOCK_START" -v end="$BLOCK_END" '
+    $0 == start {
+        inside = 1
+        next
+    }
+
+    $0 == end {
+        inside = 0
+        next
+    }
+
+    !inside {
+        print
+    }
+' "$TARGET_RC" > "${TMP_FILE}.rc"
+
+cat "$TMP_FILE" >> "${TMP_FILE}.rc"
+
+mv "${TMP_FILE}.rc" "$TARGET_RC"
+
+echo "Variáveis sincronizadas com sucesso."
+echo "Fonte:   $ENV_FILE"
+echo "Destino: $TARGET_RC"
+echo
+echo "Para aplicar no terminal atual:"
+echo "  source $TARGET_RC"

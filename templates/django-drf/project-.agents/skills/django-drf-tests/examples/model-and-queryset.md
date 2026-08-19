@@ -1,5 +1,4 @@
 # Example: Teste de Model e Custom QuerySet com setUpTestData
-
 ```python
 from django.test import TestCase
 from apps.orders.models import Order

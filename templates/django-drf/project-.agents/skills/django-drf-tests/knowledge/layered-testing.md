@@ -1,9 +1,5 @@
 # Knowledge: Pirâmide de Testes e Responsabilidade por Camada no Django/DRF
-
----
-
 ## 1. Pirâmide de Testes no Django & DRF
-
 A distribuição de testes em um projeto Django + DRF deve respeitar a pirâmide de testes:
 
 ```text
@@ -12,8 +8,6 @@ A distribuição de testes em um projeto Django + DRF deve respeitar a pirâmide
      /     \        Serializer / Service ──> Transformação, regras de negócio
     /_______\       Model / Validation / Utils ──> Base da pirâmide, rápida, determinística
 ```
-
----
 
 ## 2. Responsabilidades de Teste por Camada
 
@@ -26,8 +20,5 @@ A distribuição de testes em um projeto Django + DRF deve respeitar a pirâmide
 | **ViewSet / API** | Status HTTP (`200`, `201`, `400`, `401`, `403`, `404`), permissões, headers, contratos de resposta | Geralmente Sim | Sim |
 | **Integration** | Interação real entre múltiplos componentes (API ──> Service ──> DB) | Sim | Sim |
 
----
-
 ## 3. Diretriz de Separação de Testes
-
 > **Regra de Ouro**: Teste cada camada estritamente em sua responsabilidade. NUNCA crie testes de ViewSet HTTP para validar regras de negócio complexas que pertencem à camada de Service. NUNCA acesse o banco de dados em testes de utilitários que não necessitam de persistência.

@@ -1,8 +1,5 @@
 # Knowledge: Rotas Aninhadas com a Biblioteca `drf-nested-routers`
-
 Para projetos que possuem múltiplos níveis de aninhamento ou exigem a geração automática de rotas encadeadas via Routers, a biblioteca `drf-nested-routers` pode ser utilizada como alternativa.
-
----
 
 ## 1. Instalação
 ```bash
@@ -10,10 +7,7 @@ pip install drf-nested-routers
 ```
 > Nota: Não é necessário adicionar a `INSTALLED_APPS` no `settings.py`, pois a biblioteca fornece apenas utilitários de roteamento.
 
----
-
 ## 2. Uso do `NestedSimpleRouter` e Parâmetro `lookup`
-
 ```python
 from rest_framework import routers
 from rest_framework_nested import routers as nested_routers
@@ -25,15 +19,9 @@ router = routers.SimpleRouter()
 router.register("clients", ClientViewSet, basename="client")
 
 # 2. Router Aninhado (Filho)
-client_router = nested_routers.NestedSimpleRouter(
-    router,
-    r"clients",
-    lookup="client"
-)
+client_router = nested_routers.NestedSimpleRouter(router, r"clients", lookup="client")
 client_router.register(
-    r"calculations",
-    CalculationViewSet,
-    basename="client-calculations"
+    r"calculations", CalculationViewSet, basename="client-calculations"
 )
 
 urlpatterns = [
@@ -41,8 +29,6 @@ urlpatterns = [
     *client_router.urls,
 ]
 ```
-
----
 
 ## 3. A Importância do Parâmetro `lookup`
 

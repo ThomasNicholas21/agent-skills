@@ -1,34 +1,27 @@
 ---
 name: update-agents
 description: >-
-  Executa rotina interativa de onboarding e calibração de regras (.agents/rules/), skills e workflows
-  ao importar templates de agentes para novos repositórios. Suporta modo de engenharia reversa para
-  projetos existentes (analisando o projeto inteiro) ou entrevista interativa estilo grill-me. Use sempre
-  que o usuário solicitar /update-agents ou /update-agents-workflow.
+  Executa calibração de regras (.agents/rules/), skills e convenções ao importar templates
+  para novos projetos ou projetos existentes. Acione com /update-agents ou /update-agents-workflow.
 ---
 
 # Update Agents Onboarding Skill
-
-Esta skill guia o agente na calibração interativa e determinística das regras e habilidades em projetos que acabaram de importar ou atualizar a pasta `.agents`.
-
----
+Guia o agente na calibração de regras e habilidades em projetos que utilizam a pasta `.agents`.
 
 ## Procedimento de Execução
 
-Ao ser ativado, o agente deve seguir o fluxo:
+1. **Detecção do Repositório**:
+   - Inspecione arquivos de configuração (`manage.py`, `pyproject.toml`, `settings.py`) com `rtk find` e `rtk read`.
+   - Identifique se o projeto é novo ou existente com convenções já estabelecidas.
 
-1. **Reconhecimento & Detecção de Código Existente**:
-   - Execute `rtk find "*"` e inspecione arquivos de configuração (`manage.py`, `pyproject.toml`, `package.json`, etc.).
-   - Se o projeto for existente, ofereça a opção de **Análise Total do Codebase** para extrair as convenções já praticadas.
+2. **Varredura de Padrões (Codebase)**:
+   - Inspecione a presença de `services.py`, formato de ViewSets/Serializers, tipagem (mypy), docstrings e suíte de testes.
 
-2. **Varredura Completa do Codebase (Projetos Existentes)**:
-   - Inspecione múltiplos apps/módulos para mapear a presença de `services.py`, formato de ViewSets, separação de Serializers, tipagem (mypy), docstrings e suíte de testes.
+3. **Alinhamento com o Usuário**:
+   - Apresente os padrões detectados e confirme a estratégia de calibração (baseada no repositório, entrevista ou híbrida).
 
-3. **Entrevista Interativa (Grill-Me) / Confirmação**:
-   - Conduza a entrevista ou confirme com o usuário os padrões detectados antes de prosseguir.
+4. **Geração & Adaptação de Regras**:
+   - Utilize a `skill-creator` para gerar/atualizar regras em `.agents/rules/*.md`.
 
-4. **Invocação da `skill-creator`**:
-   - Utilize as diretrizes da `skill-creator` (`.agents/skills/skill-creator/SKILL.md`) para gerar ou adaptar os arquivos em `.agents/rules/*.md`.
-
-5. **Auditoria & Validação**:
-   - Valide gatilhos `trigger: glob:` e apresente o resumo final das convenções formalizadas.
+5. **Validação**:
+   - Valide gatilhos `trigger: glob:` e apresente o resumo final das regras formalizadas.

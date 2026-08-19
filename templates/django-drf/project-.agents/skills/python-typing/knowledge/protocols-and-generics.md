@@ -1,70 +1,37 @@
-# Knowledge: Protocols (Static Duck Typing) e Generics Modernas
+# Knowledge: Protocols (Duck Typing Estático) e Generics
 
----
-
-## 1. `Protocol` (Contratos Comportamentais sem Herança)
-
-`Protocol` implementa *structural subtyping* (tipagem estrutural / *static duck typing*). Uma classe satisfaz um protocolo simplesmente por implementar seus métodos e atributos, sem precisar herdar explicitamente da classe Protocol:
-
+## 1. `Protocol` (Tipagem Estrutural)
+Permite contratos comportamentais sem herança explícita (*static duck typing*):
 ```python
 from typing import Protocol
 from decimal import Decimal
-from apps.payments.models import PaymentResult
+
 
 class PaymentGateway(Protocol):
-    def charge(self, amount: Decimal) -> PaymentResult:
-        ...
+    def charge(self, amount: Decimal) -> bool: ...
 
-# Qualquer classe que implemente charge(amount: Decimal) -> PaymentResult satisfaz PaymentGateway
+
+# Qualquer classe com charge(amount: Decimal) -> bool satisfaz PaymentGateway
 class StripeGateway:
-    def charge(self, amount: Decimal) -> PaymentResult:
-        return PaymentResult(success=True)
-
-def process_order(gateway: PaymentGateway, amount: Decimal) -> PaymentResult:
-    return gateway.charge(amount)
+    def charge(self, amount: Decimal) -> bool:
+        return True
 ```
 
----
-
-## 2. Generics Modernas (Sintaxe Python 3.12+)
-
-A partir do Python 3.12, é possível definir classes, funções e aliases genéricos diretamente com colchetes `[T]`:
-
-### Classes Genéricas
+## 2. Generics Modernas com Sintaxe `[T]` (Python 3.12+)
 ```python
 class Repository[T]:
-    def get_by_id(self, item_id: int) -> T | None:
-        ...
-    def save(self, entity: T) -> T:
-        ...
+    def __init__(self) -> None:
+        self._items: list[T] = []
 
-type UserRepository = Repository[User]
+    def add(self, item: T) -> None:
+        self._items.append(item)
+
+    def get_first(self) -> T | None:
+        return self._items[0] if self._items else None
 ```
 
-### Funções Genéricas
+## 3. Funções Genéricas
 ```python
-from collections.abc import Sequence
-
-def first[T](items: Sequence[T]) -> T | None:
-    return items[0] if items else None
-```
-
----
-
-## 3. Decorators Preservando Assinaturas (`ParamSpec`)
-
-Para decorators e middlewares, utilize `ParamSpec` para preservar os argumentos e retorno da função original:
-
-```python
-from collections.abc import Callable
-from typing import ParamSpec, TypeVar
-
-P = ParamSpec("P")
-R = TypeVar("R")
-
-def audit_log(func: Callable[P, R]) -> Callable[P, R]:
-    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-        print(f"Calling {func.__name__}")
-        return func(*args, **kwargs)
-    return wrapper
+def first_or_default[T](items: Sequence[T], default: T) -> T:
+    return items[0] if items else default
 ```
