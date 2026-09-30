@@ -8,7 +8,9 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HUB_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-if [ -f "$HUB_DIR/agent-env.sh" ]; then
+if [ -f "$HUB_DIR/scripts/agent-env.sh" ]; then
+  source "$HUB_DIR/scripts/agent-env.sh"
+elif [ -f "$HUB_DIR/agent-env.sh" ]; then
   source "$HUB_DIR/agent-env.sh"
 fi
 
@@ -27,10 +29,12 @@ if [ ! -d "$TARGET_DIR" ]; then
 fi
 
 TARGET_DIR_ABS="$(cd "$TARGET_DIR" && pwd)"
-TEMPLATE_DIR="$HUB_DIR/templates/project-.agents"
-
-if [ ! -d "$TEMPLATE_DIR" ]; then
-  echo "Error: Master template directory '$TEMPLATE_DIR' not found."
+if [ -d "$HUB_DIR/templates/project-.agents" ]; then
+  TEMPLATE_DIR="$HUB_DIR/templates/project-.agents"
+elif [ -d "$HUB_DIR/templates/django-drf/project-.agents" ]; then
+  TEMPLATE_DIR="$HUB_DIR/templates/django-drf/project-.agents"
+else
+  echo "Error: Master template directory not found in '$HUB_DIR/templates'."
   exit 1
 fi
 
