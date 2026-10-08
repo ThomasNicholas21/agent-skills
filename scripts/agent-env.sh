@@ -8,7 +8,7 @@ export GEMINI_DIR="${GEMINI_DIR:-$HOME/.gemini}"
 export CLAUDE_DIR="${CLAUDE_DIR:-$HOME/.claude}"
 export OBSIDIAN_VAULT_DIR="${OBSIDIAN_VAULT_DIR:-$HOME/obsidian/obsidian-second-brain}"
 export SECOND_BRAIN_DIR="${SECOND_BRAIN_DIR:-$OBSIDIAN_VAULT_DIR}"
-export AGENT_SKILLS_DIR="${AGENT_SKILLS_DIR:-$HOME/projects/agent-skills}"
+export AGENT_SKILLS_DIR="${AGENT_SKILLS_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 export DOC_DIR="${DOC_DIR:-$AGENT_SKILLS_DIR/docs}"
 
 # Run global environment loader script if invoked directly
