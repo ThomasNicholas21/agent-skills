@@ -47,13 +47,11 @@ echo "=========================================================="
 TARGET_AGENTS_DIR="$TARGET_DIR_ABS/.agents"
 mkdir -p "$TARGET_AGENTS_DIR/rules"
 mkdir -p "$TARGET_AGENTS_DIR/skills"
-mkdir -p "$TARGET_AGENTS_DIR/workflows"
 
 # Copy template .agents contents
-echo "📂 Copying rules, skills, and workflows templates..."
+echo "📂 Copying rules and skills templates..."
 cp -r "$TEMPLATE_DIR/rules/"* "$TARGET_AGENTS_DIR/rules/" 2>/dev/null || true
 cp -r "$TEMPLATE_DIR/skills/"* "$TARGET_AGENTS_DIR/skills/" 2>/dev/null || true
-cp -r "$TEMPLATE_DIR/workflows/"* "$TARGET_AGENTS_DIR/workflows/" 2>/dev/null || true
 
 # Copy CLAUDE.md and GEMINI.md templates if present
 if [ -f "$TEMPLATE_DIR/CLAUDE.md" ]; then
@@ -76,6 +74,5 @@ echo "  ├── CLAUDE.md"
 echo "  ├── GEMINI.md"
 echo "  └── .agents/"
 echo "      ├── rules/      (DRF, RTK, Testing standards)"
-echo "      ├── skills/     (Local skills, Service skills, Meta-skills)"
-echo "      └── workflows/  (Functional tests, Plan, Clean refactor)"
+echo "      └── skills/     (Local skills, Service skills, Meta-skills, Planning skills)"
 echo "=========================================================="

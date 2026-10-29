@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 # Anti-Drift
 
 - Antes de alterar código, execute `git status --short`.

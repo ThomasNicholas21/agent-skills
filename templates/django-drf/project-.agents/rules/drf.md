@@ -1,8 +1,6 @@
 ---
-trigger:
-  glob:
-    - "**/{views,viewsets,serializers,schemas,urls,exceptions,consumers}*.py"
-    - "**/{views,viewsets,serializers,schemas,urls,exceptions,consumers}/**/*.py"
+trigger: glob
+glob: "**/views*.py, **/viewsets*.py, **/serializers*.py, **/schemas*.py, **/urls*.py, **/exceptions*.py, **/consumers*.py"
 ---
 
 # Arquitetura DRF

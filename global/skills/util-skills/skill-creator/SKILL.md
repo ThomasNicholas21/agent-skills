@@ -53,8 +53,8 @@ skills/<skill-name>/
 ### Estrutura do Arquivo (`.agents/rules/<name>.md` ou `templates/project-.agents/rules/<name>.md`)
 ```markdown
 ---
-trigger:
-  glob: "**/models.py"  # Gatilho automático por caminho de arquivo
+trigger: glob
+glob: "**/models*.py"  # Gatilho automático por caminho de arquivo
 ---
 
 # Regras de Desenvolvimento: <Tecnologia / Domínio>

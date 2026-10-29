@@ -32,8 +32,8 @@ skills/<skill-name>/
 ## 3. Padrão de Criação de Rules
 ```markdown
 ---
-trigger:
-  glob: "**/models.py"
+trigger: glob
+glob: "**/models*.py"
 ---
 
 # Regras: <Domínio>

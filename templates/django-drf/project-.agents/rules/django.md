@@ -1,8 +1,6 @@
 ---
-trigger:
-  glob:
-    - "**/{models,views,admin,forms,validators}*.py"
-    - "**/{models,views,admin,forms,validators}/**/*.py"
+trigger: glob
+glob: "**/models*.py, **/views*.py, **/admin*.py, **/forms*.py, **/validators*.py"
 ---
 
 # Arquitetura Django

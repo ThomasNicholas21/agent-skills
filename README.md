@@ -1,6 +1,6 @@
 # Agent Skills: Hub Central de Arquitetura e Configurações para Agentes de IA
 
-O **Agent Skills** é um ecossistema centralizado para criação, gerenciamento e automação de regras (*Rules*), fluxos de trabalho (*Workflows*) e habilidades (*Skills*) para agentes autônomos de codificação, com suporte nativo ao **Google Antigravity** e **Claude Code**.
+O **Agent Skills** é um ecossistema centralizado para criação, gerenciamento e automação de regras (*Rules*) e habilidades (*Skills*) para agentes autônomos de codificação, com suporte nativo ao **Google Antigravity** e **Claude Code**.
 
 ---
 
@@ -35,7 +35,7 @@ Para inicializar a pasta `.agents/` em um novo projeto destino:
 ```bash
 ./scripts/init-project-agents.sh /caminho/do/projeto-destino
 ```
-*Este script copia a estrutura de regras (`rules/`), habilidades (`skills/`) e fluxos (`workflows/`) para o projeto destino.*
+*Este script copia a estrutura de regras (`rules/`) e habilidades (`skills/`) para o projeto destino.*
 
 ### 2. Calibração Interativa via `/update-agents`
 Ao importar o template para um novo projeto, execute o comando de onboarding:
@@ -151,8 +151,7 @@ agent-skills/
 ├── templates/                             # Templates mestres para novos projetos
 │   └── project-.agents/                   # Estrutura base da pasta .agents/ para repositórios
 │       ├── rules/                         # 15 Regras (models, viewsets, serializers, drf-architecture, performance, testes)
-│       ├── skills/                        # Skills locais (skill-creator, update-agents)
-│       └── workflows/                     # Workflows locais (/update-agents)
+│       └── skills/                        # Skills locais e de planejamento (drf-*, create-plan, create-pr, etc.)
 ├── scripts/                               # Scripts executáveis
 │   ├── agent-env.sh                       # Carregador de variáveis de ambiente
 │   ├── init-project-agents.sh             # Inicialização de novos projetos

@@ -1,19 +1,17 @@
 # Project Architecture: Agent Skills Ecosystem
 
 ## Architecture & System Overview
-The **Agent Skills** ecosystem is a centralized infrastructure for managing, parameterizing, and automating rules (`rules/`), workflows (`workflows/`), and skills (`skills/`) for autonomous coding agents (Google Antigravity and Claude Code).
+The **Agent Skills** ecosystem is a centralized infrastructure for managing, parameterizing, and automating rules (`rules/`) and skills (`skills/`) for autonomous coding agents (Google Antigravity and Claude Code).
 
 The ecosystem is structured into four main operational tracks:
 
 1. **Global Skills & Rules Track (`global/`)**:
    - `global/GEMINI.md` & `global/CLAUDE.md`: Always-On universal agent operating directives.
-   - `global/global_workflows/`: Universal workflows for quality audit, TDD, project study, and Second Brain sync.
    - `global/skills/`: Categorized global skill packages (`patterns-skills/`, `obsidian-skills/`, `util-skills/`, and standalone skills) bi-directionally synchronized with `~/.gemini/config/skills/` and `~/.claude/skills/`.
 
 2. **Project Templates Track (`templates/project-.agents/`)**:
    - `rules/`: 15 specialized development rules (`drf-viewsets`, `drf-serializers`, `django-models`, `django-forms`, `django-validators`, `django-and-drf-performance`, `drf-exceptions`, `drf-urls`, `testing-standards`, `antigravity-rtk-rules`, `anti-drift`, `style-guide`, etc.).
-   - `skills/`: Onboarding and meta-skills (`skill-creator`, `update-agents`, etc.).
-   - `workflows/`: Local project workflows (`/update-agents`, `/create-plan`, `/refactor-clean`).
+   - `skills/`: Onboarding, meta-skills, and planning/execution skills (`drf-*`, `skill-creator`, `update-agents`, `create-plan`, `create-pr`, `create-bugfix-plan`, etc.).
 
 3. **Knowledge Base Track (`docs/`)**:
    - `docs/design-patterns/`: Central catalog (`INDEX.md`) and references for GoF Patterns, Refactoring Guru, and Service Design Patterns.
@@ -38,13 +36,11 @@ agent-skills/
 │   └── tools/                             # Manuais do RTK e Obsidian Second Brain
 ├── global/                                # Espelho global (sincronizado com ~/.gemini/ e ~/.claude/)
 │   ├── GEMINI.md                          # Diretivas Always-On universais
-│   ├── global_workflows/                  # Workflows globais (audit-quality, study-project, tdd-feature, etc.)
 │   └── skills/                            # Skills globais (patterns-skills, obsidian-skills, util-skills, feature)
 ├── templates/                             # Templates mestres para novos projetos
 │   └── project-.agents/                   # Estrutura base da pasta .agents/ para repositórios
 │       ├── rules/                         # 15 Regras (models, viewsets, serializers, drf-architecture, performance, testes, RTK)
-│       ├── skills/                        # Skills locais (skill-creator, update-agents)
-│       └── workflows/                     # Workflows locais (/update-agents)
+│       └── skills/                        # Skills locais e de desenvolvimento (drf-*, create-plan, create-pr, etc.)
 └── scripts/                               # Scripts executáveis de automação
     ├── agent-env.sh                       # Carregador de variáveis de ambiente do repositório
     ├── init-project-agents.sh             # Inicialização de infraestrutura em projetos destino
@@ -62,8 +58,8 @@ agent-skills/
 - **Progressive Disclosure**: `SKILL.md` body must be lean (<100 lines), referencing detailed docs in `references/`.
 - **RTK Directives**: Executable procedures must use `rtk` prefix for terminal efficiency.
 
-### 2. Rule Package Standard (`trigger: glob:`)
-- **Activation**: Rules in `templates/project-.agents/rules/` use `trigger: glob:` patterns supporting both single files and package directories (e.g. `**/{viewsets.py,viewsets/**/*.py}`).
+### 2. Rule Package Standard (`trigger: glob`)
+- **Activation**: Rules in `templates/project-.agents/rules/` use `trigger: glob` and comma-separated `glob:` patterns (e.g. `glob: "**/models*.py, **/views*.py"`).
 
 ### 3. Environment Variables Standard
 - `AGENT_SKILLS_DIR`: Path to `agent-skills` repository root.

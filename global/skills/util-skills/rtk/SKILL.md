@@ -1,3 +1,10 @@
+---
+name: rtk
+description: >-
+  Terminal interface and CLI proxy for agent efficiency. Compresses terminal output by 60-90%,
+  preserves exit codes, and optimizes context window usage across git, tests, docker, and dev tools.
+---
+
 # RTK — Terminal Efficiency
 RTK is the default terminal interface when an equivalent command exists.
 Its goal is to reduce terminal output and context usage without sacrificing

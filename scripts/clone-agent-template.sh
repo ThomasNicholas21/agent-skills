@@ -60,17 +60,13 @@ echo "=========================================================="
 
 mkdir -p "$TARGET_AGENTS_DIR/rules"
 mkdir -p "$TARGET_AGENTS_DIR/skills"
-mkdir -p "$TARGET_AGENTS_DIR/workflows"
 
-# Copy rules, skills, and workflows
+# Copy rules and skills
 if [ -d "$TEMPLATE_DIR/rules" ]; then
   cp -r "$TEMPLATE_DIR/rules/"* "$TARGET_AGENTS_DIR/rules/" 2>/dev/null || true
 fi
 if [ -d "$TEMPLATE_DIR/skills" ]; then
   cp -r "$TEMPLATE_DIR/skills/"* "$TARGET_AGENTS_DIR/skills/" 2>/dev/null || true
-fi
-if [ -d "$TEMPLATE_DIR/workflows" ]; then
-  cp -r "$TEMPLATE_DIR/workflows/"* "$TARGET_AGENTS_DIR/workflows/" 2>/dev/null || true
 fi
 
 # Copy root GEMINI.md and CLAUDE.md if present in template
@@ -89,6 +85,5 @@ echo "✅ Successfully initialized .agents ($TEMPLATE_NAME) in: $TARGET_DIR_ABS"
 echo "Created Structure:"
 echo "  ├── .agents/"
 echo "  │   ├── rules/"
-echo "  │   ├── skills/"
-echo "  │   └── workflows/"
+echo "  │   └── skills/"
 echo "=========================================================="
