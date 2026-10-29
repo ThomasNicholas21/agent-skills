@@ -11,6 +11,7 @@ dependencies = [
     "django>=6.1.2",
     "djangorestframework>=3.18.3",
     "fastmcp>=4.1.4",
+    "google-antigravity>=0.1.23",
     "google-genai>=2.33.0",
     "grandalf>=0.8",
     "langchain>=1.4.7",
