@@ -1,0 +1,12 @@
+.venv/
+.git/
+.github/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+db.sqlite3
+.DS_Store
