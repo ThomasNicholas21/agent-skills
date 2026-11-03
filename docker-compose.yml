@@ -1,0 +1,102 @@
+networks:
+  agent-skills-network:
+    driver: bridge
+
+services:
+  db:
+    image: postgis/postgis:17-3.5-alpine
+    container_name: agent-skills-db
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - agent_skills_db_data:/var/lib/postgresql/data/
+    environment:
+      - TZ=America/Sao_Paulo
+      - POSTGRES_DB=${POSTGRES_DB:-postgres}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+    networks:
+      - agent-skills-network
+    healthcheck:
+      test: "pg_isready -U $${POSTGRES_USER:-postgres} -d $${POSTGRES_DB:-postgres}"
+      interval: 5s
+      timeout: 10s
+      retries: 5
+
+  redis:
+    image: redis:alpine
+    container_name: agent-skills-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - agent_skills_redis_data:/data
+    networks:
+      - agent-skills-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000 --noreload
+    container_name: agent-skills-api
+    restart: always
+    ports:
+      - "8000:8000"
+    networks:
+      - agent-skills-network
+    volumes:
+      - ./core:/app/core
+      - ./apps:/app/apps
+      - ./media:/app/media
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: "curl --silent --fail http://localhost:8000/api/health/ || exit 1"
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: '1GB'
+
+  worker:
+    build: .
+    command: celery -A core worker --beat --loglevel=info
+    container_name: agent-skills-worker
+    restart: always
+    volumes:
+      - ./core:/app/core
+      - ./apps:/app/apps
+      - ./media:/app/media
+    networks:
+      - agent-skills-network
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: '1GB'
+
+volumes:
+  agent_skills_db_data:
+  agent_skills_redis_data:
