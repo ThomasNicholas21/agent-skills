@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    "apps",
+    "apps.repos",
 ]
 
 USE_POSTGRES = os.getenv("USE_POSTGRES", "True").lower() in ("true", "1", "yes")
