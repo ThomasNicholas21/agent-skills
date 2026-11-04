@@ -10,6 +10,7 @@ requires-python = ">=3.14"
 dependencies = [
     "celery>=5.4.0",
     "django>=6.1.2",
+    "django-markdownfield>=0.21.1",
     "djangorestframework>=3.18.3",
     "fastmcp>=4.1.4",
     "google-antigravity>=0.1.23",
