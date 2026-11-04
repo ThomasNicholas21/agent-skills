@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "apps.repos",
+    "apps.agent_skills",
 ]
 
 USE_POSTGRES = os.getenv("USE_POSTGRES", "True").lower() in ("true", "1", "yes")
